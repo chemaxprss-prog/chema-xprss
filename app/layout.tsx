@@ -16,33 +16,55 @@ const geistMono = Geist_Mono({
 });
 
 
+// ESTA APP ES DINÁMICA
+// No generar páginas estáticas durante build
+export const dynamic = "force-dynamic";
+
+export const revalidate = 0;
+
+
 export const metadata: Metadata = {
   title: "Chema Xprss",
   description: "Pedidos online",
 };
 
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
 
-  return (
+children,
 
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+}: Readonly<{
 
-      <body className="min-h-full flex flex-col">
+children: React.ReactNode;
 
-        <CartProvider>
+}>) {
 
-          {children}
 
-        </CartProvider>
+return (
 
-      </body>
+<html
 
-    </html>
+lang="es"
 
-  );
+className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+
+>
+
+<body className="min-h-full flex flex-col">
+
+
+<CartProvider>
+
+{children}
+
+</CartProvider>
+
+
+</body>
+
+</html>
+
+);
+
 
 }
