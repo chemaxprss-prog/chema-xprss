@@ -1,22 +1,12 @@
-import Navbar from "@/components/landing/Navbar";
-import Hero from "@/components/landing/Hero";
-import BusinessInfo from "@/components/landing/BusinessInfo";
-import MenuSection from "@/components/landing/MenuSection";
-import Features from "@/components/landing/Features";
-import Footer from "@/components/landing/Footer";
-import WhatsAppButton from "@/components/landing/WhatsAppButton";
-
+import MenuAccordion from "@/components/MenuAccordion";
+import CartButton from "@/components/CartButton";
 import { getMenu } from "@/lib/menu";
-import { getBusiness } from "@/lib/business";
 
 
-
-export default async function Home(){
+export default async function MenuPage(){
 
 
 const products = await getMenu();
-
-const business = await getBusiness();
 
 
 
@@ -31,7 +21,7 @@ const categoryName = product.categories?.name;
 
 let category = acc.find(
 
-item => item.category === categoryName
+item=>item.category === categoryName
 
 );
 
@@ -62,7 +52,6 @@ acc.push(category);
 
 
 
-
 category.items.push({
 
 
@@ -74,6 +63,7 @@ description:product.description,
 
 
 sizes:[
+
 
 
 ...(product.price_half
@@ -101,6 +91,7 @@ price:product.price_half
 
 
 
+
 ...(product.price_liter
 
 ?
@@ -120,6 +111,7 @@ price:product.price_liter
 :
 
 []
+
 ),
 
 
@@ -146,8 +138,6 @@ price:product.price_single
 
 []
 
-
-
 )
 
 
@@ -173,91 +163,69 @@ return acc;
 
 
 
-
-
-
 return (
 
 <main className="
-bg-black
 min-h-screen
+bg-gray-100
+p-5
+pb-32
+">
+
+
+<h1 className="
+text-4xl
+font-black
+text-center
+text-gray-900
+mb-8
+">
+
+🍤 Nuestro Menú
+
+</h1>
+
+
+
+
+
+<div className="
+max-w-5xl
+mx-auto
+space-y-5
 ">
 
 
 
 
+{
 
-<Navbar
-
-business={business}
-
-/>
+menu.map((category:any)=>(
 
 
+<MenuAccordion
 
+key={category.category}
 
-
-
-<Hero
-
-business={business}
+category={category}
 
 />
 
 
+))
+
+
+}
 
 
 
-
-<BusinessInfo
-
-business={business}
-
-/>
-
-
-
-
-
-
-<MenuSection
-
-menu={menu}
-
-/>
+</div>
 
 
 
 
 
-
-<Features />
-
-
-
-
-
-
-
-<Footer
-
-business={business}
-
-/>
-
-
-
-
-
-
-
-<WhatsAppButton
-
-business={business}
-
-/>
-
-
+<CartButton />
 
 
 
