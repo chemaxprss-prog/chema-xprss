@@ -3,6 +3,9 @@ import CartButton from "@/components/CartButton";
 import { getMenu } from "@/lib/menu";
 
 
+export const dynamic = "force-dynamic";
+
+
 export default async function MenuPage(){
 
 
@@ -12,16 +15,18 @@ const products = await getMenu();
 
 
 
-const menu = products.reduce((acc:any[], product:any)=>{
+const menu = (products || []).reduce(
+
+(acc:any[], product:any)=>{
 
 
-const categoryName = product.categories?.name;
+const categoryName = product.categories?.name || "Sin categoría";
 
 
 
 let category = acc.find(
 
-item=>item.category === categoryName
+(item)=>item.category === categoryName
 
 );
 
@@ -36,7 +41,7 @@ category={
 
 category:categoryName,
 
-image:product.categories?.image,
+image:product.categories?.image || "",
 
 items:[]
 
@@ -85,7 +90,6 @@ price:product.price_half
 :
 
 []
-
 ),
 
 
@@ -111,7 +115,6 @@ price:product.price_liter
 :
 
 []
-
 ),
 
 
@@ -137,7 +140,6 @@ price:product.price_single
 :
 
 []
-
 )
 
 

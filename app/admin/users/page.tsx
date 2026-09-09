@@ -4,6 +4,10 @@ import DeleteUserButton from "@/components/DeleteUserButton";
 import { checkPermission } from "../permissions";
 
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+
 export default async function UsersPage(){
 
 
@@ -12,19 +16,19 @@ await checkPermission("users");
 
 
 const {
-data:users,
-error
-}=await supabaseAdmin
+  data: users,
+  error
+}= await supabaseAdmin
 
 .from("profiles")
 
 .select("*")
 
 .order(
-"created_at",
-{
-ascending:false
-}
+  "created_at",
+  {
+    ascending:false
+  }
 );
 
 
@@ -107,6 +111,7 @@ text-red-500
 font-bold
 ">
 
+Error cargando usuarios:
 {error.message}
 
 </p>
@@ -121,7 +126,11 @@ font-bold
 
 {
 
-users?.map((user:any)=>(
+users && users.length > 0
+
+?
+
+users.map((user:any)=>(
 
 
 <div
@@ -148,7 +157,7 @@ font-black
 text-lg
 ">
 
-{user.name}
+{user.name || "Sin nombre"}
 
 </p>
 
@@ -205,6 +214,20 @@ userId={user.user_id}
 
 ))
 
+:
+
+(
+
+<p className="
+text-gray-500
+font-bold
+">
+
+No hay usuarios registrados
+
+</p>
+
+)
 
 }
 

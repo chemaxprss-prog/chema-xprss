@@ -10,6 +10,8 @@ import { getMenu } from "@/lib/menu";
 import { getBusiness } from "@/lib/business";
 
 
+export const dynamic = "force-dynamic";
+
 
 export default async function Home(){
 
@@ -22,16 +24,18 @@ const business = await getBusiness();
 
 
 
-const menu = products.reduce((acc:any[], product:any)=>{
+const menu = (products || []).reduce(
+
+(acc:any[], product:any)=>{
 
 
-const categoryName = product.categories?.name;
+const categoryName = product.categories?.name || "Sin categoría";
 
 
 
 let category = acc.find(
 
-item => item.category === categoryName
+(item)=>item.category === categoryName
 
 );
 
@@ -46,7 +50,7 @@ category={
 
 category:categoryName,
 
-image:product.categories?.image,
+image:product.categories?.image || "",
 
 items:[]
 
@@ -73,6 +77,7 @@ name:product.name,
 description:product.description,
 
 
+
 sizes:[
 
 
@@ -95,8 +100,8 @@ price:product.price_half
 :
 
 []
-
 ),
+
 
 
 
@@ -126,6 +131,7 @@ price:product.price_liter
 
 
 
+
 ...(product.price_single
 
 ?
@@ -145,9 +151,6 @@ price:product.price_single
 :
 
 []
-
-
-
 )
 
 
