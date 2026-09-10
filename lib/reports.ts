@@ -2,11 +2,16 @@ import { supabase } from "@/lib/supabase";
 
 
 
-function getStartOfDay(date: Date){
+function getStartOfDay(date:Date){
 
   const start = new Date(date);
 
-  start.setHours(0,0,0,0);
+  start.setHours(
+    0,
+    0,
+    0,
+    0
+  );
 
   return start.toISOString();
 
@@ -14,11 +19,16 @@ function getStartOfDay(date: Date){
 
 
 
-function getEndOfDay(date: Date){
+function getEndOfDay(date:Date){
 
   const end = new Date(date);
 
-  end.setHours(23,59,59,999);
+  end.setHours(
+    23,
+    59,
+    59,
+    999
+  );
 
   return end.toISOString();
 
@@ -28,101 +38,178 @@ function getEndOfDay(date: Date){
 
 
 
+// ===============================
+// VENTAS GENERALES
+// orders + sales
+// ===============================
+
+
 export async function getSalesByRange(
-  start: Date,
-  end: Date
+  start:Date,
+  end:Date
 ){
 
 
-  const {
-    data,
-    error
+const {
 
-  } = await supabase
+data:orders,
 
-  .from("orders")
+error:orderError
 
-  .select(
-    "id,total,created_at,status,payment_method"
-  )
+}=await supabase
 
-  .eq(
-    "status",
-    "ENTREGADO"
-  )
+.from("orders")
 
-  .gte(
-    "created_at",
-    start.toISOString()
-  )
+.select(
+`
+id,
+total,
+created_at,
+status,
+payment_method
+`
+)
 
-  .lte(
-    "created_at",
-    end.toISOString()
-  );
+.eq(
+"status",
+"ENTREGADO"
+)
 
+.gte(
+"created_at",
+start.toISOString()
+)
 
-
-
-  if(error){
-
-    console.error(
-      "Error ventas:",
-      error
-    );
-
-    return {
-      total:0,
-      count:0,
-      average:0
-    };
-
-  }
+.lte(
+"created_at",
+end.toISOString()
+);
 
 
 
 
-  const total =
-
-    data?.reduce(
-      (sum,order)=>
-
-        sum + Number(order.total || 0),
-
-      0
-
-    ) || 0;
 
 
+const {
+
+data:sales,
+
+error:salesError
+
+}=await supabase
+
+.from("sales")
+
+.select(
+`
+id,
+total,
+created_at,
+payment_method
+`
+)
+
+.gte(
+"created_at",
+start.toISOString()
+)
+
+.lte(
+"created_at",
+end.toISOString()
+);
 
 
-  const count =
-    data?.length || 0;
 
 
 
-  return {
 
-    total,
+if(orderError || salesError){
 
-    count,
 
-    average:
+console.error(
+"Error ventas",
+orderError || salesError
+);
 
-      count > 0
 
-      ?
+return {
 
-      total / count
+total:0,
 
-      :
+count:0,
 
-      0
+average:0
 
-  };
+};
 
 
 }
+
+
+
+
+
+const allSales=[
+
+...(orders || []),
+
+...(sales || [])
+
+];
+
+
+
+
+
+const total =
+allSales.reduce(
+
+(sum,item)=>
+
+sum + Number(item.total || 0),
+
+0
+
+);
+
+
+
+
+
+const count =
+allSales.length;
+
+
+
+
+
+return {
+
+
+total,
+
+count,
+
+average:
+
+count
+
+?
+
+total/count
+
+:
+
+0
+
+
+};
+
+
+}
+
+
 
 
 
@@ -132,18 +219,20 @@ export async function getSalesByRange(
 
 export async function getSalesToday(){
 
- const now = new Date();
+const now=new Date();
 
 
- return getSalesByRange(
+return getSalesByRange(
 
-   new Date(getStartOfDay(now)),
+new Date(getStartOfDay(now)),
 
-   new Date(getEndOfDay(now))
+new Date(getEndOfDay(now))
 
- );
+);
+
 
 }
+
 
 
 
@@ -153,23 +242,28 @@ export async function getSalesToday(){
 
 export async function getSalesYesterday(){
 
- const date = new Date();
+
+const date=new Date();
 
 
- date.setDate(
-   date.getDate()-1
- );
+date.setDate(
+date.getDate()-1
+);
 
 
- return getSalesByRange(
 
-   new Date(getStartOfDay(date)),
+return getSalesByRange(
 
-   new Date(getEndOfDay(date))
+new Date(getStartOfDay(date)),
 
- );
+new Date(getEndOfDay(date))
+
+);
+
 
 }
+
+
 
 
 
@@ -179,26 +273,34 @@ export async function getSalesYesterday(){
 
 export async function getSalesThisWeek(){
 
- const today = new Date();
+
+const today=new Date();
 
 
- const firstDay = new Date(today);
+const firstDay=new Date(today);
 
 
- firstDay.setDate(
-   today.getDate()-today.getDay()
- );
+firstDay.setDate(
+
+today.getDate()-today.getDay()
+
+);
 
 
- return getSalesByRange(
 
-   new Date(getStartOfDay(firstDay)),
 
-   new Date(getEndOfDay(today))
+return getSalesByRange(
 
- );
+new Date(getStartOfDay(firstDay)),
+
+new Date(getEndOfDay(today))
+
+);
+
 
 }
+
+
 
 
 
@@ -208,23 +310,31 @@ export async function getSalesThisWeek(){
 
 export async function getSalesThisMonth(){
 
- const today = new Date();
+
+const today=new Date();
 
 
- const firstDay = new Date(
-   today.getFullYear(),
-   today.getMonth(),
-   1
- );
+const firstDay=new Date(
+
+today.getFullYear(),
+
+today.getMonth(),
+
+1
+
+);
 
 
- return getSalesByRange(
 
-   new Date(getStartOfDay(firstDay)),
 
-   new Date(getEndOfDay(today))
+return getSalesByRange(
 
- );
+new Date(getStartOfDay(firstDay)),
+
+new Date(getEndOfDay(today))
+
+);
+
 
 }
 
@@ -236,90 +346,130 @@ export async function getSalesThisMonth(){
 
 
 
+
+
+// ===============================
+// PRODUCTOS MAS VENDIDOS
+// order_items + sale_items
+// ===============================
+
+
 export async function getTopProducts(
- limit=10
+limit=10
 ){
 
 
- const {
-   data,
-   error
+const {
 
- } = await supabase
+data:orderItems
 
+}=await supabase
 
- .from("order_items")
+.from("order_items")
 
-
- .select(
-   `
-   product_name,
-   quantity,
-   subtotal
-   `
- );
+.select(
+`
+product_name,
+quantity,
+subtotal
+`
+);
 
 
 
 
 
- if(error){
+const {
 
-   console.error(
-    "Error productos:",
-    error
-   );
+data:saleItems
 
-   return [];
+}=await supabase
 
- }
+.from("sale_items")
 
-
-
-
-
- const products: Record<string,{
-  product_name:string;
-  quantity:number;
-  total:number;
-}> = {};
+.select(
+`
+product_name,
+quantity,
+subtotal
+`
+);
 
 
 
 
- data?.forEach(item=>{
 
 
-   if(!products[item.product_name]){
+const items=[
 
+...(orderItems || []),
 
-     products[item.product_name]={
+...(saleItems || [])
 
-       product_name:item.product_name,
-
-       quantity:0,
-
-       total:0
-
-     };
-
-
-   }
+];
 
 
 
 
-   products[item.product_name].quantity +=
-      Number(item.quantity || 0);
+
+
+const products:
+
+Record<string,{
+
+product_name:string;
+
+quantity:number;
+
+total:number;
+
+}>
+
+={};
 
 
 
-   products[item.product_name].total +=
-      Number(item.subtotal || 0);
 
 
 
- });
+items.forEach((item:any)=>{
+
+
+if(!products[item.product_name]){
+
+
+products[item.product_name]={
+
+product_name:item.product_name,
+
+quantity:0,
+
+total:0
+
+};
+
+
+}
+
+
+
+
+
+products[item.product_name].quantity +=
+
+Number(item.quantity || 0);
+
+
+
+
+
+products[item.product_name].total +=
+
+Number(item.subtotal || 0);
+
+
+
+});
 
 
 
@@ -329,106 +479,16 @@ export async function getTopProducts(
 return Object.values(products)
 
 .sort(
-  (a,b)=>
-  b.quantity - a.quantity
+
+(a,b)=>
+
+b.quantity-a.quantity
+
 )
 
-.slice(0,limit);
-
-
-
-}
-
-
-
-
-
-
-
-
-
-export async function getPaymentSummary(){
-
-
- const {
-   data,
-   error
-
- } = await supabase
-
-
- .from("orders")
-
-
- .select(
-   "payment_method,total,status"
- )
-
- .eq(
-   "status",
-   "ENTREGADO"
- );
-
-
-
-
-
- if(error){
-
-   console.error(
-    "Error pagos:",
-    error
-   );
-
-   return [];
-
- }
-
-
-
-
-
- const payments:any={};
-
-
-
-
-
- data?.forEach(order=>{
-
-
-   const method =
-    order.payment_method || "OTRO";
-
-
-
-   payments[method] =
-   (
-    payments[method] || 0
-   )
-   +
-   Number(order.total || 0);
-
-
-
- });
-
-
-
-
-
-
-
- return Object.entries(payments)
-
-.map(
- ([method,total])=>({
-
-   method,
-
-   total:Number(total)
-
- })
+.slice(
+0,
+limit
 );
 
 
@@ -443,166 +503,373 @@ export async function getPaymentSummary(){
 
 
 
+
+
+// ===============================
+// PAGOS
+// orders + sales
+// ===============================
+
+
+export async function getPaymentSummary(){
+
+
+
+const {
+
+data:orders
+
+}=await supabase
+
+.from("orders")
+
+.select(
+`
+payment_method,
+total,
+status
+`
+)
+
+.eq(
+"status",
+"ENTREGADO"
+);
+
+
+
+
+
+
+const {
+
+data:sales
+
+}=await supabase
+
+.from("sales")
+
+.select(
+`
+payment_method,
+total
+`
+);
+
+
+
+
+
+
+const payments:
+
+Record<string,number>
+
+={};
+
+
+
+
+
+
+[
+
+...(orders || []),
+
+...(sales || [])
+
+]
+
+.forEach((item:any)=>{
+
+
+const method =
+
+item.payment_method || "OTRO";
+
+
+
+payments[method]=
+
+(
+
+payments[method] || 0
+
+)
+
++
+
+Number(item.total || 0);
+
+
+
+});
+
+
+
+
+
+
+return Object.entries(payments)
+
+.map(
+
+([method,total])=>({
+
+method,
+
+total
+
+})
+
+);
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+// ===============================
+// GRAFICA ULTIMOS DIAS
+// orders + sales
+// ===============================
+
+
 export async function getSalesLastDays(
- days=7
+days=7
 ){
 
 
- const result:any[]=[];
+const result:any[]=[];
 
 
- const today=new Date();
+const today=new Date();
 
 
 
 
- for(
-   let i=days-1;
-   i>=0;
-   i--
- ){
 
+for(
+let i=days-1;
+i>=0;
+i--
+){
 
-   const date=new Date(today);
 
+const date=new Date(today);
 
-   date.setDate(
-    today.getDate()-i
-   );
 
+date.setDate(
 
+today.getDate()-i
 
-   result.push({
+);
 
-    date:
-    date.toISOString()
-    .split("T")[0],
 
 
-    day:
-    date.toLocaleDateString(
-      "es-ES",
-      {
-       weekday:"short"
-      }
-    )
-    .replace(".",""),
 
 
-    total:0
+result.push({
 
-   });
+date:
 
+date.toISOString()
 
- }
+.split("T")[0],
 
 
 
+day:
 
- const start=new Date(today);
+date.toLocaleDateString(
 
+"es-ES",
 
- start.setDate(
-  today.getDate()-days+1
- );
+{
 
+weekday:"short"
 
- start.setHours(
-  0,0,0,0
- );
+}
 
+)
 
+.replace(".",""),
 
 
 
- const {
-   data,
-   error
+total:0
 
- } = await supabase
 
+});
 
- .from("orders")
 
+}
 
- .select(
-   "total,created_at,status"
- )
 
 
- .eq(
-  "status",
-  "ENTREGADO"
- )
 
 
- .gte(
-  "created_at",
-  start.toISOString()
- );
 
 
+const start=new Date(today);
 
 
+start.setDate(
 
- if(error){
+today.getDate()-days+1
 
-  console.error(
-   "Error gráfico:",
-   error
-  );
+);
 
 
-  return result.map(item=>({
+start.setHours(
 
-   day:item.day,
+0,
+0,
+0,
+0
 
-   total:item.total
+);
 
-  }));
 
- }
 
 
 
- data?.forEach(order=>{
 
 
-   const date =
-   new Date(order.created_at)
-   .toISOString()
-   .split("T")[0];
+const {
 
+data:orders
 
+}=await supabase
 
-   const item =
-   result.find(
-    x=>x.date===date
-   );
+.from("orders")
 
+.select(
 
+"total,created_at,status"
 
-   if(item){
+)
 
-    item.total +=
-    Number(order.total || 0);
+.eq(
 
-   }
+"status",
 
+"ENTREGADO"
 
- });
+)
 
+.gte(
 
+"created_at",
 
+start.toISOString()
 
+);
 
- return result.map(item=>({
 
-  day:item.day,
 
-  total:item.total
 
- }));
+
+
+
+
+const {
+
+data:sales
+
+}=await supabase
+
+.from("sales")
+
+.select(
+
+"total,created_at"
+
+)
+
+.gte(
+
+"created_at",
+
+start.toISOString()
+
+);
+
+
+
+
+
+
+
+
+[
+
+...(orders || []),
+
+...(sales || [])
+
+]
+
+.forEach((item:any)=>{
+
+
+const date =
+
+new Date(item.created_at)
+
+.toISOString()
+
+.split("T")[0];
+
+
+
+
+
+const row=
+
+result.find(
+
+x=>x.date===date
+
+);
+
+
+
+
+
+if(row){
+
+
+row.total +=
+
+Number(item.total || 0);
+
+
+}
+
+
+});
+
+
+
+
+
+
+return result.map(item=>({
+
+day:item.day,
+
+total:item.total
+
+}));
 
 
 
