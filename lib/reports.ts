@@ -44,14 +44,12 @@ export async function getSalesByRange(
 
   .from("orders")
 
-  .select(
-    `
+  .select(`
     id,
     total,
     created_at,
     status
-    `
-  )
+  `)
 
   .eq(
     "status",
@@ -71,13 +69,13 @@ export async function getSalesByRange(
 
 
 
-
   if(error){
 
     console.error(
       "Error ventas:",
       error
     );
+
 
     return {
       total:0,
@@ -91,6 +89,7 @@ export async function getSalesByRange(
 
 
   const total =
+
     data?.reduce(
       (sum,order)=>
 
@@ -116,15 +115,15 @@ export async function getSalesByRange(
 
     average:
 
-      count > 0
+    count > 0
 
-      ?
+    ?
 
-      total / count
+    total / count
 
-      :
+    :
 
-      0
+    0
 
   };
 
@@ -141,17 +140,16 @@ export async function getSalesByRange(
 
 export async function getSalesToday(){
 
-const now = new Date();
+ const now = new Date();
 
 
-return getSalesByRange(
+ return getSalesByRange(
 
-getStartOfDay(now),
+  getStartOfDay(now),
 
-getEndOfDay(now)
+  getEndOfDay(now)
 
-);
-
+ );
 
 }
 
@@ -165,23 +163,21 @@ getEndOfDay(now)
 
 export async function getSalesYesterday(){
 
-const date = new Date();
+ const date = new Date();
 
 
-date.setDate(
-date.getDate()-1
-);
+ date.setDate(
+  date.getDate()-1
+ );
 
 
+ return getSalesByRange(
 
-return getSalesByRange(
+  getStartOfDay(date),
 
-getStartOfDay(date),
+  getEndOfDay(date)
 
-getEndOfDay(date)
-
-);
-
+ );
 
 }
 
@@ -195,26 +191,24 @@ getEndOfDay(date)
 
 export async function getSalesThisWeek(){
 
-const today = new Date();
+ const today = new Date();
 
 
-const firstDay = new Date(today);
+ const firstDay = new Date(today);
 
 
-firstDay.setDate(
-today.getDate()-today.getDay()
-);
+ firstDay.setDate(
+  today.getDate()-today.getDay()
+ );
 
 
+ return getSalesByRange(
 
-return getSalesByRange(
+  getStartOfDay(firstDay),
 
-getStartOfDay(firstDay),
+  getEndOfDay(today)
 
-getEndOfDay(today)
-
-);
-
+ );
 
 }
 
@@ -228,29 +222,28 @@ getEndOfDay(today)
 
 export async function getSalesThisMonth(){
 
-const today = new Date();
+ const today = new Date();
 
 
-const firstDay = new Date(
+ const firstDay = new Date(
 
-today.getFullYear(),
+  today.getFullYear(),
 
-today.getMonth(),
+  today.getMonth(),
 
-1
+  1
 
-);
+ );
 
 
 
-return getSalesByRange(
+ return getSalesByRange(
 
-getStartOfDay(firstDay),
+  getStartOfDay(firstDay),
 
-getEndOfDay(today)
+  getEndOfDay(today)
 
-);
-
+ );
 
 }
 
@@ -262,142 +255,122 @@ getEndOfDay(today)
 
 
 
-// PRODUCTOS MAS VENDIDOS
+
+
+
 
 export async function getTopProducts(
-limit = 10
+ limit=10
 ){
 
 
-const {
+ const {
+  data,
+  error
 
-data,
+ } = await supabase
 
-error
 
-}=await supabase
+ .from("order_items")
 
-.from("order_items")
 
-.select(
-`
-product_name,
-quantity,
-subtotal
-`
-);
+ .select(`
 
+ product_name,
 
+ quantity,
 
+ subtotal
 
+ `);
 
-if(error){
 
-console.error(
-"Error productos:",
-error
-);
 
-return [];
 
-}
 
+ if(error){
 
+  console.error(
+   "Error productos:",
+   error
+  );
 
 
+  return [];
 
-const products:
+ }
 
-Record<
 
-string,
 
-{
 
-product_name:string;
 
-quantity:number;
+ const products:Record<string,{
+  product_name:string;
+  quantity:number;
+  total:number;
+ }>={};
 
-total:number;
 
-}
 
->
 
-={};
 
+ data?.forEach(item=>{
 
 
+  const name =
+   item.product_name || "Producto";
 
 
 
-data?.forEach((item)=>{
+  if(!products[name]){
 
 
-const name =
-item.product_name || "SIN NOMBRE";
+   products[name]={
 
+    product_name:name,
 
+    quantity:0,
 
-if(!products[name]){
+    total:0
 
+   };
 
-products[name]={
 
-product_name:name,
+  }
 
-quantity:0,
 
-total:0
 
-};
+  products[name].quantity +=
+   Number(item.quantity || 0);
 
 
-}
 
+  products[name].total +=
+   Number(item.subtotal || 0);
 
 
 
-products[name].quantity +=
+ });
 
-Number(
-item.quantity || 0
-);
 
 
 
-products[name].total +=
 
-Number(
-item.subtotal || 0
-);
 
+ return Object.values(products)
 
+ .sort(
 
-});
+  (a,b)=>
 
+  b.quantity-a.quantity
 
+ )
 
-
-
-
-
-return Object.values(products)
-
-.sort(
-
-(a,b)=>
-
-b.quantity-a.quantity
-
-)
-
-.slice(
-0,
-limit
-);
-
-
+ .slice(
+  0,
+  limit
+ );
 
 }
 
@@ -409,117 +382,105 @@ limit
 
 
 
-// METODOS DE PAGO
+
+
+
 
 export async function getPaymentSummary(){
 
 
-const {
 
-data,
+ const {
+  data,
+  error
 
-error
-
-}=await supabase
-
-
-.from("payments")
-
-.select(
-`
-method,
-amount,
-status
-`
-)
-
-.eq(
-"status",
-"PAGADO"
-);
+ } = await supabase
 
 
+ .from("payments")
 
 
+ .select(`
 
-if(error){
+ method,
 
-console.error(
-"Error pagos:",
-error
-);
+ amount,
 
-return [];
+ status
 
-}
+ `)
+
+ .eq(
+  "status",
+  "PAGADO"
+ );
 
 
 
 
 
-const payments:
+ if(error){
 
-Record<string,number>
-
-={};
-
-
-
+  console.error(
+   "Error pagos:",
+   error
+  );
 
 
+  return [];
 
-data?.forEach((payment)=>{
-
-
-const method =
-
-payment.method ||
-
-"OTRO";
+ }
 
 
 
 
-payments[method]=
 
-(
-
-payments[method] || 0
-
-)
-
-+
-
-Number(
-payment.amount || 0
-);
+ const payments:Record<string,number>={};
 
 
 
-});
+
+
+ data?.forEach(payment=>{
+
+
+  const method =
+   payment.method || "OTRO";
+
+
+
+  payments[method] =
+
+   (
+    payments[method] || 0
+   )
+
+   +
+
+   Number(
+    payment.amount || 0
+   );
+
+
+
+ });
 
 
 
 
 
 
-return Object.entries(payments)
 
-.map(
 
-([method,total])=>(
+ return Object.entries(payments)
 
-{
+ .map(([method,total])=>({
 
-method,
+  method,
 
-total
+  total
 
-}
-
-)
-
-);
+ }));
 
 
 
@@ -533,230 +494,211 @@ total
 
 
 
-// GRAFICA ULTIMOS DIAS
+
+
+
+
+
 
 export async function getSalesLastDays(
-days = 7
+ days=7
 ){
 
 
-const result:any[]=[];
+ const result:any[]=[];
 
 
-const today = new Date();
+ const today = new Date();
 
 
 
 
 
-for(
-let i = days-1;
+ for(
+  let i=days-1;
+  i>=0;
+  i--
+ ){
 
-i>=0;
 
-i--
-){
+  const date=new Date(today);
 
 
 
-const date = new Date(today);
+  date.setDate(
+   today.getDate()-i
+  );
 
 
 
-date.setDate(
 
-today.getDate()-i
+  result.push({
 
-);
+   date:
 
+   date.toISOString()
+   .split("T")[0],
 
 
 
-result.push({
+   day:
 
-date:
+   date.toLocaleDateString(
+    "es-ES",
+    {
+     weekday:"short"
+    }
+   )
+   .replace(".",""),
 
-date.toISOString()
-.split("T")[0],
 
 
-day:
+   total:0
 
-date.toLocaleDateString(
+  });
 
-"es-MX",
 
-{
+ }
 
-weekday:"short"
 
-}
 
-)
-.replace(".",""),
 
 
+ const start=new Date(today);
 
-total:0
 
 
-});
+ start.setDate(
+  today.getDate()-days+1
+ );
 
 
-}
 
+ start.setHours(
+  0,0,0,0
+ );
 
 
 
 
 
 
-const start = new Date(today);
 
+ const {
+  data,
+  error
 
-start.setDate(
+ } = await supabase
 
-today.getDate()-days+1
 
-);
+ .from("orders")
 
 
+ .select(`
 
-start.setHours(
-0,
-0,
-0,
-0
-);
+ total,
 
+ created_at,
 
+ status
 
+ `)
 
+ .eq(
+  "status",
+  "ENTREGADO"
+ )
 
 
+ .gte(
 
-const {
+  "created_at",
 
-data,
+  start.toISOString()
 
-error
+ );
 
-}=await supabase
 
 
-.from("orders")
 
-.select(
-`
-total,
-created_at,
-status
-`
-)
 
-.eq(
-"status",
-"ENTREGADO"
-)
 
-.gte(
 
-"created_at",
+ if(error){
 
-start.toISOString()
+  console.error(
+   "Error gráfica:",
+   error
+  );
 
-);
 
+  return result.map(item=>({
 
+   day:item.day,
 
+   total:item.total
 
+  }));
 
+ }
 
 
+ 
 
-if(error){
 
-console.error(
-"Error gráfica:",
-error
-);
 
 
-return result.map(item=>({
+ data?.forEach(order=>{
 
-day:item.day,
 
-total:item.total
+  const date =
 
-}));
+   new Date(order.created_at)
 
+   .toISOString()
 
+   .split("T")[0];
 
-}
 
 
 
+  const item =
 
+   result.find(
 
+    x=>x.date===date
 
+   );
 
-data?.forEach((order)=>{
 
 
 
-const day =
+  if(item){
 
-new Date(order.created_at)
+   item.total +=
 
-.toISOString()
+    Number(
+     order.total || 0
+    );
 
-.split("T")[0];
+  }
 
 
 
+ });
 
 
-const item =
 
-result.find(
 
-x=>x.date===day
 
-);
 
+ return result.map(item=>({
 
+  day:item.day,
 
+  total:item.total
 
-
-if(item){
-
-item.total +=
-
-Number(
-order.total || 0
-);
-
-}
-
-
-});
-
-
-
-
-
-
-return result.map(item=>(
-
-{
-
-day:item.day,
-
-total:item.total
-
-}
-
-));
+ }));
 
 
 

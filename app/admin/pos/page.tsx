@@ -1,23 +1,60 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import {
+  useEffect,
+  useState
+} from "react";
+
+import {
+  supabase
+} from "@/lib/supabase";
+
 
 
 export default function POSPage(){
 
 
-const [products,setProducts]=useState<any[]>([]);
 
-const [cart,setCart]=useState<any[]>([]);
+const [
+  products,
+  setProducts
+]=useState<any[]>([]);
 
-const [search,setSearch]=useState("");
 
-const [payment,setPayment]=useState("");
 
-const [received,setReceived]=useState(0);
+const [
+  cart,
+  setCart
+]=useState<any[]>([]);
 
-const [loading,setLoading]=useState(true);
+
+
+const [
+  search,
+  setSearch
+]=useState("");
+
+
+
+const [
+  payment,
+  setPayment
+]=useState("");
+
+
+
+const [
+  received,
+  setReceived
+]=useState(0);
+
+
+
+const [
+  loading,
+  setLoading
+]=useState(true);
+
 
 
 
@@ -25,9 +62,11 @@ const [loading,setLoading]=useState(true);
 
 useEffect(()=>{
 
-loadProducts();
+  loadProducts();
 
 },[]);
+
+
 
 
 
@@ -36,45 +75,65 @@ loadProducts();
 async function loadProducts(){
 
 
-const {data,error}=await supabase
+  const {
+    data,
+    error
 
-.from("products")
-
-.select(`
-
-id,
-
-name,
-
-price_half,
-
-price_liter,
-
-price_single
-
-`)
-
-.eq("active",true)
-
-.order("name");
+  } = await supabase
 
 
+  .from("products")
 
-if(error){
 
-console.log(error);
+  .select(`
 
-return;
+    id,
+
+    name,
+
+    price_half,
+
+    price_liter,
+
+    price_single
+
+  `)
+
+
+  .eq(
+    "active",
+    true
+  )
+
+
+  .order(
+    "name"
+  );
+
+
+
+
+  if(error){
+
+    console.log(error);
+
+    return;
+
+  }
+
+
+
+
+  setProducts(
+    data || []
+  );
+
+
+  setLoading(false);
+
 
 }
 
-
-setProducts(data || []);
-
-setLoading(false);
-
-
-}
 
 
 
@@ -85,91 +144,116 @@ setLoading(false);
 
 function addProduct(
 
-product:any,
+  product:any,
 
-size:string,
+  size:string,
 
-price:number
+  price:number
 
 ){
 
 
-const existing = cart.find(
 
-(item:any)=>
+  const existing = cart.find(
 
-item.product_id===product.id &&
+    (item:any)=>
 
-item.size===size
+      item.product_id === product.id &&
 
-);
+      item.size === size
 
-
-
-if(existing){
+  );
 
 
-setCart(
 
-cart.map((item:any)=>
 
-item.product_id===product.id &&
 
-item.size===size
+  if(existing){
 
-?
 
-{
 
-...item,
+    setCart(
 
-quantity:item.quantity+1,
+      cart.map(
 
-subtotal:(item.quantity+1)*item.price
+        (item:any)=>
+
+        item.product_id === product.id &&
+
+        item.size === size
+
+        ?
+
+        {
+
+          ...item,
+
+          quantity:item.quantity + 1,
+
+          subtotal:
+          (item.quantity + 1)
+          *
+          item.price
+
+        }
+
+
+        :
+
+        item
+
+      )
+
+    );
+
+
+    return;
+
+
+  }
+
+
+
+
+
+
+
+
+  setCart([
+
+    ...cart,
+
+
+    {
+
+      product_id:
+      product.id,
+
+
+      product_name:
+      product.name,
+
+
+      size,
+
+
+      quantity:1,
+
+
+      price,
+
+
+      subtotal:price
+
+    }
+
+
+  ]);
+
+
 
 }
 
-:
-
-item
-
-)
-
-);
-
-
-return;
-
-}
-
-
-
-
-
-setCart([
-
-...cart,
-
-{
-
-product_id:product.id,
-
-product_name:product.name,
-
-size,
-
-quantity:1,
-
-price,
-
-subtotal:price
-
-}
-
-]);
-
-
-}
 
 
 
@@ -180,33 +264,42 @@ subtotal:price
 
 function updateQuantity(
 
-index:number,
+ index:number,
 
-action:string
+ action:string
 
 ){
 
 
+
 setCart(
 
-cart.map((item:any,i:number)=>{
+
+cart.map(
+
+(item:any,i:number)=>{
+
 
 
 if(i!==index){
 
-return item;
+ return item;
 
 }
 
 
 
-let quantity=item.quantity;
+
+let quantity =
+item.quantity;
+
+
 
 
 
 if(action==="add"){
 
-quantity++;
+ quantity++;
 
 }
 
@@ -214,7 +307,7 @@ quantity++;
 
 if(action==="remove"){
 
-quantity--;
+ quantity--;
 
 }
 
@@ -224,29 +317,41 @@ quantity--;
 
 if(quantity<=0){
 
-return null;
+ return null;
 
 }
+
+
 
 
 
 return {
 
-...item,
+ ...item,
 
-quantity,
+ quantity,
 
-subtotal:quantity*item.price
+
+ subtotal:
+ quantity *
+ item.price
+
 
 };
 
 
 
-})
+}
+
+
+)
+
 
 .filter(Boolean)
 
+
 );
+
 
 
 }
@@ -258,14 +363,21 @@ subtotal:quantity*item.price
 
 
 
-function removeItem(index:number){
+
+function removeItem(
+
+ index:number
+
+){
 
 
 setCart(
 
 cart.filter(
 
-(_,i)=>i!==index
+(_,i)=>
+
+i!==index
 
 )
 
@@ -273,6 +385,7 @@ cart.filter(
 
 
 }
+
 
 
 
@@ -290,12 +403,14 @@ return cart.reduce(
 
 sum + item.subtotal,
 
+
 0
 
 );
 
 
 }
+
 
 
 
@@ -309,7 +424,8 @@ function change(){
 
 return Math.max(
 
-received-total(),
+received - total(),
+
 
 0
 
@@ -320,177 +436,387 @@ received-total(),
 async function finishSale(){
 
 
-if(cart.length===0){
+  if(cart.length===0){
 
-alert("Carrito vacío");
+    alert(
+      "Carrito vacío"
+    );
 
-return;
+    return;
+
+  }
+
+
+
+
+  if(!payment){
+
+    alert(
+      "Seleccione método de pago"
+    );
+
+    return;
+
+  }
+
+
+
+
+
+  const orderNumber =
+
+    "PED-" +
+
+    Date.now();
+
+
+
+
+
+
+  /*
+    1) CREAR ORDEN
+  */
+
+
+  const {
+
+    data:order,
+
+    error:orderError
+
+
+  } = await supabase
+
+
+  .from("orders")
+
+
+  .insert({
+
+
+    order_number:
+    orderNumber,
+
+
+    customer_name:
+    "Mostrador",
+
+
+    delivery_type:
+    "MOSTRADOR",
+
+
+    total:
+    total(),
+
+
+    status:
+    "ENTREGADO",
+
+
+    payment_status:
+    "PAGADO",
+
+
+    payment_method:
+    payment
+
+
+  })
+
+
+  .select()
+
+
+  .single();
+
+
+
+
+
+
+
+  if(orderError){
+
+
+    console.log(
+      orderError
+    );
+
+
+    alert(
+      orderError.message
+    );
+
+
+    return;
+
+
+  }
+
+
+
+
+
+
+
+
+  /*
+    2) CREAR DETALLE DE PRODUCTOS
+  */
+
+
+
+
+
+  const {
+
+    error:itemError
+
+
+  } = await supabase
+
+
+  .from("order_items")
+
+
+  .insert(
+
+
+    cart.map((item:any)=>(
+
+
+      {
+
+
+        order_id:
+        order.id,
+
+
+        product_name:
+        item.product_name,
+
+
+        quantity:
+        item.quantity,
+
+
+        price:
+        item.price,
+
+
+        size:
+        item.size,
+
+
+        subtotal:
+        item.subtotal
+
+
+      }
+
+
+    ))
+
+
+  );
+
+
+
+
+
+
+
+
+  if(itemError){
+
+
+    console.log(
+      itemError
+    );
+
+
+    alert(
+      itemError.message
+    );
+
+
+    return;
+
+
+  }
+
+
+
+
+
+
+
+
+  /*
+    3) CREAR PAGO
+  */
+
+
+
+
+
+  const {
+
+    error:paymentError
+
+
+  } = await supabase
+
+
+  .from("payments")
+
+
+  .insert({
+
+
+
+    order_id:
+    order.id,
+
+
+    method:
+    payment,
+
+
+    amount:
+    total(),
+
+
+    status:
+    "PAGADO"
+
+
+
+  });
+
+
+
+
+
+
+
+  if(paymentError){
+
+
+    console.log(
+      paymentError
+    );
+
+
+    alert(
+      paymentError.message
+    );
+
+
+    return;
+
+
+  }
+
+
+
+
+
+
+
+
+  /*
+    4) MOVIMIENTO DE CAJA
+  */
+
+
+
+
+
+  const {
+
+    error:cashError
+
+
+  } = await supabase
+
+
+  .from("cash_movements")
+
+
+  .insert({
+
+
+    type:
+    "INGRESO",
+
+
+    description:
+    `Venta ${orderNumber}`,
+
+
+    amount:
+    total()
+
+
+  });
+
+
+
+
+
+
+
+
+  if(cashError){
+
+
+    console.log(
+      cashError
+    );
+
+
+    alert(
+      cashError.message
+    );
+
+
+    return;
+
+
+  }
+
+
+
+
+
+
+
+
+  alert(
+
+    `Venta realizada ${orderNumber}`
+
+  );
+
+
+
+
+
+
+  setCart([]);
+
+
+  setReceived(0);
+
+
+  setPayment("");
+
+
 
 }
-
-
-
-if(!payment){
-
-alert("Seleccione método de pago");
-
-return;
-
-}
-
-
-
-const saleNumber="V-"+Date.now();
-
-
-
-
-const {data:sale,error}=await supabase
-
-.from("sales")
-
-.insert({
-
-sale_number:saleNumber,
-
-sale_type:"MOSTRADOR",
-
-total:total(),
-
-payment_method:payment
-
-})
-
-.select()
-
-.single();
-
-
-
-
-
-if(error){
-
-console.log(error);
-
-alert(error.message);
-
-return;
-
-}
-
-
-
-
-
-const {error:itemError}=await supabase
-
-.from("sale_items")
-
-.insert(
-
-cart.map((item:any)=>(
-
-{
-
-sale_id:sale.id,
-
-product_id:item.product_id,
-
-product_name:item.product_name,
-
-size:item.size,
-
-quantity:item.quantity,
-
-price:item.price,
-
-subtotal:item.subtotal
-
-}
-
-))
-
-);
-
-
-
-
-
-if(itemError){
-
-console.log(itemError);
-
-alert(itemError.message);
-
-return;
-
-}
-
-
-
-
-
-
-
-const {error:cashError}=await supabase
-
-.from("cash_movements")
-
-.insert({
-
-type:"INGRESO",
-
-description:`Venta ${saleNumber}`,
-
-amount:total()
-
-});
-
-
-
-
-
-if(cashError){
-
-console.log(cashError);
-
-alert(cashError.message);
-
-return;
-
-}
-
-
-
-
-
-alert(
-
-`Venta realizada ${saleNumber}`
-
-);
-
-
-
-setCart([]);
-
-setReceived(0);
-
-setPayment("");
-
-
-
-}
-
-
-
-
-
-
-
-
-
 if(loading){
 
 return (
@@ -507,7 +833,6 @@ Cargando caja...
 )
 
 }
-
 
 
 
@@ -535,6 +860,8 @@ search.toLowerCase()
 
 
 
+
+
 return (
 
 <main className="
@@ -550,6 +877,9 @@ mx-auto
 ">
 
 
+
+
+
 <h1 className="
 text-3xl
 font-black
@@ -559,6 +889,8 @@ text-gray-900
 💰 Caja
 
 </h1>
+
+
 
 
 <p className="
@@ -574,12 +906,19 @@ Venta mostrador
 
 
 
+
+
+
 <div className="
 grid
 grid-cols-1
 lg:grid-cols-2
 gap-5
 ">
+
+
+
+
 
 
 
@@ -606,6 +945,8 @@ Productos
 
 
 
+
+
 <input
 
 placeholder="🔍 Buscar producto..."
@@ -614,7 +955,9 @@ value={search}
 
 onChange={(e)=>
 
-setSearch(e.target.value)
+setSearch(
+e.target.value
+)
 
 }
 
@@ -632,6 +975,9 @@ mb-4
 
 
 
+
+
+
 <div className="
 space-y-3
 ">
@@ -639,7 +985,9 @@ space-y-3
 
 {
 
-filteredProducts.map((product:any)=>(
+filteredProducts.map(
+
+(product:any)=>(
 
 
 <div
@@ -655,6 +1003,7 @@ p-4
 >
 
 
+
 <p className="
 font-black
 mb-3
@@ -667,15 +1016,22 @@ mb-3
 
 
 
+
+
 <div className="
 grid
 grid-cols-3
 gap-2
 ">
 
+
+
+
+
 {
 
 product.price_half &&
+
 
 <button
 
@@ -712,9 +1068,15 @@ ${product.price_half}
 
 
 
+
+
+
+
+
 {
 
 product.price_liter &&
+
 
 <button
 
@@ -751,9 +1113,15 @@ ${product.price_liter}
 
 
 
+
+
+
+
+
 {
 
 product.price_single &&
+
 
 <button
 
@@ -790,13 +1158,20 @@ ${product.price_single}
 
 
 
+
+
+
 </div>
 
 
 </div>
 
 
-))
+
+)
+
+
+)
 
 
 }
@@ -806,7 +1181,12 @@ ${product.price_single}
 </div>
 
 
+
 </section>
+
+
+
+
 
 
 
@@ -833,6 +1213,8 @@ mb-4
 
 
 
+
+
 <div className="
 space-y-3
 max-h-96
@@ -840,9 +1222,14 @@ overflow-y-auto
 ">
 
 
+
+
+
 {
 
-cart.map((item,index)=>(
+cart.map(
+
+(item,index)=>(
 
 
 <div
@@ -861,7 +1248,9 @@ items-center
 >
 
 
+
 <div>
+
 
 <p className="
 font-bold
@@ -870,6 +1259,7 @@ font-bold
 {item.product_name}
 
 </p>
+
 
 
 <p className="
@@ -883,6 +1273,10 @@ text-gray-500
 
 
 
+
+
+
+
 <div className="
 flex
 items-center
@@ -891,9 +1285,18 @@ mt-2
 ">
 
 
+
+
+
 <button
 
-onClick={()=>updateQuantity(index,"remove")}
+onClick={()=>updateQuantity(
+
+index,
+
+"remove"
+
+)}
 
 className="
 bg-red-500
@@ -912,6 +1315,9 @@ font-black
 
 
 
+
+
+
 <span className="
 font-black
 ">
@@ -923,9 +1329,18 @@ font-black
 
 
 
+
+
+
 <button
 
-onClick={()=>updateQuantity(index,"add")}
+onClick={()=>updateQuantity(
+
+index,
+
+"add"
+
+)}
 
 className="
 bg-green-600
@@ -943,10 +1358,16 @@ font-black
 </button>
 
 
+
+
+
 </div>
 
 
 </div>
+
+
+
 
 
 
@@ -966,6 +1387,8 @@ ${item.subtotal}
 </p>
 
 
+
+
 <button
 
 onClick={()=>removeItem(index)}
@@ -983,14 +1406,22 @@ Eliminar
 </button>
 
 
-</div>
-
-
 
 </div>
 
 
-))
+
+
+
+</div>
+
+
+
+)
+
+
+)
+
 
 
 }
@@ -1005,11 +1436,17 @@ Eliminar
 
 
 
+
+
 <div className="
 border-t
 mt-5
 pt-5
 ">
+
+
+
+
 
 
 <p className="
@@ -1022,6 +1459,9 @@ TOTAL:
 ${total()}
 
 </p>
+
+
+
 
 
 
@@ -1059,6 +1499,8 @@ text-lg
 
 
 
+
+
 <p className="
 mt-3
 text-xl
@@ -1077,13 +1519,20 @@ ${change()}
 
 
 
+
+
+
 <select
 
 value={payment}
 
 onChange={(e)=>
 
-setPayment(e.target.value)
+setPayment(
+
+e.target.value
+
+)
 
 }
 
@@ -1098,11 +1547,14 @@ p-3
 >
 
 
+
 <option value="">
 
 Método pago
 
 </option>
+
+
 
 
 <option value="EFECTIVO">
@@ -1112,11 +1564,17 @@ Método pago
 </option>
 
 
+
+
+
 <option value="TRANSFERENCIA">
 
 📲 Transferencia
 
 </option>
+
+
+
 
 
 <option value="TARJETA">
@@ -1126,7 +1584,13 @@ Método pago
 </option>
 
 
+
+
+
 </select>
+
+
+
 
 
 
@@ -1157,20 +1621,33 @@ COBRAR
 
 
 
+
+
+
 </div>
+
 
 
 </section>
 
 
 
-</div>
+
+
 
 
 </div>
+
+
+
+
+
+</div>
+
 
 
 </main>
+
 
 );
 
