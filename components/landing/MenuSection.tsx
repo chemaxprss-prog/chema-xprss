@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 interface MenuSectionProps {
 
-menu:any[];
+  menu:any[];
 
 }
 
@@ -13,269 +13,266 @@ menu:any[];
 
 export default function MenuSection({
 
-menu
+  menu
 
 }:MenuSectionProps){
 
 
+  const router = useRouter();
 
-const router = useRouter();
 
 
+  return (
 
+    <section
 
+      id="menu"
 
-return (
+      className="
+      bg-gray-100
+      py-20
+      px-6
+      "
 
-<section
+    >
 
-id="menu"
 
-className="
-bg-gray-100
-py-20
-px-6
-"
+      <div
 
->
+        className="
+        max-w-7xl
+        mx-auto
+        "
 
+      >
 
 
-<div
 
-className="
-max-w-7xl
-mx-auto
-"
+        <h2
 
->
+          className="
+          text-4xl
+          md:text-5xl
+          font-black
+          text-center
+          text-gray-900
+          mb-4
+          "
 
+        >
 
+          Nuestro Menú
 
+        </h2>
 
-<h2
 
-className="
-text-4xl
-md:text-5xl
-font-black
-text-center
-text-gray-900
-mb-4
-"
 
->
 
-Nuestro Menú
+        <p
 
-</h2>
+          className="
+          text-center
+          text-gray-600
+          text-lg
+          mb-12
+          "
 
+        >
 
+          Descubre nuestros sabores y especialidades
 
+        </p>
 
 
-<p
 
-className="
-text-center
-text-gray-600
-text-lg
-mb-12
-"
 
->
 
-Descubre nuestros sabores y especialidades
 
-</p>
 
+        <div
 
+          className="
+          grid
+          grid-cols-2
+          md:grid-cols-4
+          gap-5
+          "
 
+        >
 
 
 
+          {
 
+            menu.slice(0,4).map((category:any)=>(
 
 
-<div
+              <div
 
-className="
-grid
-grid-cols-2
-md:grid-cols-4
-gap-5
-"
+                key={category.category}
 
->
+                onClick={()=>router.push("/menu")}
 
+                className="
+                bg-white
+                rounded-3xl
+                overflow-hidden
+                shadow-md
+                hover:shadow-xl
+                transition
+                hover:-translate-y-2
+                cursor-pointer
+                "
 
+              >
 
 
 
-{
 
-menu.slice(0,4).map((category:any)=>(
+                {
 
+                  category.image &&
 
-<div
 
-key={category.category}
+                  <img
 
-className="
-bg-white
-rounded-3xl
-overflow-hidden
-shadow-md
-hover:shadow-xl
-transition
-hover:-translate-y-2
-"
+                    src={category.image}
 
->
+                    alt={category.category}
 
+                    className="
+                    w-full
+                    h-40
+                    object-cover
+                    "
 
+                  />
 
+                }
 
-{
 
-category.image &&
 
 
-<img
 
-src={category.image}
 
-alt={category.category}
+                <div
 
-className="
-w-full
-h-40
-object-cover
-"
+                  className="
+                  p-4
+                  "
 
-/>
+                >
 
-}
 
 
+                  <h3
 
+                    className="
+                    text-xl
+                    font-black
+                    text-teal-700
+                    "
 
-<div
+                  >
 
-className="
-p-4
-"
+                    {category.category}
 
->
+                  </h3>
 
 
-<h3
 
-className="
-text-xl
-font-black
-text-teal-700
-"
 
->
+                  <p
 
-{category.category}
+                    className="
+                    text-gray-500
+                    mt-2
+                    "
 
-</h3>
+                  >
 
+                    Ver opciones →
 
+                  </p>
 
-<p
 
-className="
-text-gray-500
-mt-2
-"
 
->
+                </div>
 
-Ver opciones →
 
-</p>
 
 
 
-</div>
+              </div>
 
 
+            ))
 
 
+          }
 
-</div>
 
 
-))
 
+        </div>
 
-}
 
 
 
 
-</div>
 
 
 
+        <div
 
+          className="
+          text-center
+          mt-12
+          "
 
+        >
 
 
 
+          <button
 
-<div
+            onClick={()=>router.push("/menu")}
 
-className="
-text-center
-mt-12
-"
+            className="
+            bg-orange-500
+            hover:bg-orange-600
+            text-white
+            font-black
+            px-10
+            py-4
+            rounded-full
+            shadow-lg
+            transition
+            hover:scale-105
+            "
 
->
+          >
 
+            🍤 VER MENÚ COMPLETO
 
-<button
+          </button>
 
-onClick={()=>router.push("/menu")}
 
-className="
-bg-orange-500
-hover:bg-orange-600
-text-white
-font-black
-px-10
-py-4
-rounded-full
-shadow-lg
-transition
-hover:scale-105
-"
 
->
+        </div>
 
-🍤 VER MENÚ COMPLETO
 
-</button>
 
 
 
-</div>
 
+      </div>
 
 
+    </section>
 
 
-
-</div>
-
-
-</section>
-
-
-);
+  );
 
 
 }

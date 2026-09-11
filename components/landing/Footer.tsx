@@ -81,26 +81,7 @@ gap-10
 <div>
 
 
-{
 
-business?.logo &&
-
-
-<img
-
-src={business.logo}
-
-alt="Logo"
-
-className="
-w-36
-mb-5
-object-contain
-"
-
-/>
-
-}
 
 
 

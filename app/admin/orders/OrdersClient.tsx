@@ -4,9 +4,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 
-
-
-
 export default function AdminOrdersPage(){
 
 const [orders,setOrders]=useState<any[]>([]);
@@ -136,10 +133,10 @@ status
 
 if(paymentStatus){
 
-updateData.payment_status=paymentStatus;
+updateData.payment_status =
+paymentStatus;
 
 }
-
 
 
 
@@ -160,7 +157,6 @@ id
 
 
 
-
 if(error){
 
 alert(
@@ -177,10 +173,70 @@ return;
 
 
 
-
 setUpdating(null);
 
 loadOrders();
+
+
+}
+
+
+
+
+
+function sendDeliveryWhatsApp(order:any){
+
+
+const phone =
+order.customer_phone.replace(
+ /\D/g,
+""
+);
+
+
+
+let message="";
+
+
+
+if(order.delivery_type==="Domicilio"){
+
+
+message =
+`Hola ${order.customer_name} 👋
+
+Tu pedido ${order.order_number} ya va en camino 🛵
+
+Gracias por comprar en CHEMA XPRSS 🍤`;
+
+
+}else{
+
+
+message =
+
+`Hola ${order.customer_name} 👋
+
+Tu pedido ${order.order_number} ya está listo para recoger.
+
+Gracias por comprar en CHEMA XPRSS.`;
+
+
+}
+
+
+
+const url =
+`https://wa.me/${phone}?text=${encodeURIComponent(
+message
+)}`;
+
+
+
+window.open(
+url,
+"_blank"
+);
 
 
 }
@@ -224,7 +280,13 @@ next:"LISTO"
 case "LISTO":
 
 return {
-text:"Enviar pedido",
+text:
+order.delivery_type==="Domicilio"
+?
+"Enviar pedido"
+:
+"Avisar listo para recoger",
+
 next:"EN_CAMINO"
 };
 
@@ -279,12 +341,11 @@ ENTREGADO:
 };
 
 
-return styles[status] || "bg-gray-600 text-white";
+return styles[status] ||
+"bg-gray-600 text-white";
 
 
 }
-
-
 
 
 
@@ -306,13 +367,6 @@ minute:"2-digit"
 );
 
 }
-
-
-
-
-
-
-
 if(loading){
 
 return (
@@ -333,9 +387,6 @@ Cargando pedidos...
 );
 
 }
-
-
-
 
 
 
@@ -394,7 +445,8 @@ gap-6
 orders.map((order:any)=>{
 
 
-const action=nextAction(order);
+const action =
+nextAction(order);
 
 
 
@@ -468,6 +520,7 @@ ${statusStyle(order.status)}
 
 
 
+
 <div className="
 p-5
 space-y-4
@@ -493,7 +546,6 @@ space-y-4
 <p>
 
 {
-
 order.delivery_type==="Domicilio"
 
 ?
@@ -523,6 +575,7 @@ font-black
 🍽 Productos
 
 </h3>
+
 
 
 
@@ -574,7 +627,6 @@ ${item.subtotal}
 
 
 
-
 <div className="
 border-t
 pt-4
@@ -621,6 +673,8 @@ space-y-3
 
 
 
+
+
 {
 
 action &&
@@ -629,14 +683,30 @@ action &&
 
 disabled={updating===order.id}
 
-onClick={()=>updateOrderStatus(
+onClick={async()=>{
+
+
+await updateOrderStatus(
 order.id,
 action.next
-)}
+);
+
+
+
+if(action.next==="EN_CAMINO"){
+
+sendDeliveryWhatsApp(order);
+
+}
+
+
+
+}}
 
 className="
 w-full
 bg-orange-500
+hover:bg-orange-600
 text-white
 py-3
 rounded-full
@@ -662,6 +732,7 @@ action.text
 </button>
 
 }
+
 
 
 
@@ -706,11 +777,16 @@ Confirmar pago
 
 
 
+
+
+
 <a
 
 href={`https://wa.me/${order.customer_phone}`}
 
 target="_blank"
+
+rel="noopener noreferrer"
 
 className="
 block

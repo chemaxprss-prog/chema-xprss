@@ -1,285 +1,1011 @@
 "use client";
 
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
+
 import { useCart } from "@/context/CartContext";
+
 import { supabase } from "@/lib/supabase";
 
+import { getBusiness } from "@/lib/business";
+
+
+
 export default function CheckoutPage() {
-  const { items, total } = useCart();
 
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
 
-  const [delivery, setDelivery] = useState("Recoger");
+const { items, total } = useCart();
 
-  const [paymentMethod, setPaymentMethod] = useState("EFECTIVO");
 
-  const [address, setAddress] = useState("");
 
-  const [notes, setNotes] = useState("");
+const [business,setBusiness]=useState<any>(null);
 
-  const [loading, setLoading] = useState(false);
 
-  const [error, setError] = useState("");
 
-  async function confirmOrder() {
-    if (!name.trim() || !phone.trim()) {
-      setError("Completa nombre y WhatsApp");
-      return;
-    }
+const [name,setName]=useState("");
 
-    if (delivery === "Domicilio" && !address.trim()) {
-      setError("Completa la dirección");
-      return;
-    }
+const [phone,setPhone]=useState("");
 
-    if (items.length === 0) {
-      setError("El carrito está vacío");
-      return;
-    }
+const [delivery,setDelivery]=useState("Recoger");
 
-    setLoading(true);
-    setError("");
+const [paymentMethod,setPaymentMethod]=useState("EFECTIVO");
 
-    try {
-      const orderItems = items.map((item) => ({
-        product_id: item.id,
-        size: item.size,
-        quantity: item.quantity,
-        notes: item.notes || "",
-      }));
+const [address,setAddress]=useState("");
 
-      console.log(
-        "ITEMS ENVIADOS RPC:",
-        JSON.stringify(orderItems, null, 2)
-      );
+const [notes,setNotes]=useState("");
 
-      const { data, error } = await supabase.rpc("create_order", {
-        p_customer_name: name,
-        p_customer_phone: phone,
-        p_delivery_type: delivery,
-        p_address: address,
-        p_notes: notes,
-        p_payment_method: paymentMethod,
-        p_items: orderItems,
-      });
+const [loading,setLoading]=useState(false);
 
-      if (error) {
-        console.log("ERROR CREANDO PEDIDO:", error);
+const [error,setError]=useState("");
 
-        setError(error.message);
 
-        setLoading(false);
 
-        return;
-      }
 
-      console.log("RESPUESTA PEDIDO:", data);
 
-      const orderNumber = data?.order_number;
 
-      if (!orderNumber) {
-        setError(
-          "El pedido fue creado pero no se recibió el número de confirmación."
-        );
+useEffect(()=>{
 
-        setLoading(false);
 
-        return;
-      }
+getBusiness()
 
-      console.log("NUMERO PEDIDO:", orderNumber);
+.then((data)=>{
 
-      /*
-       * Limpiar carrito después de crear correctamente
-       * el pedido.
-       */
-      try {
-        localStorage.removeItem("cart");
-      } catch (storageError) {
-        console.log("No se pudo limpiar localStorage:", storageError);
-      }
+setBusiness(data);
 
-      /*
-       * Redirección directa.
-       * Evitamos router.push para que la navegación
-       * no dependa del estado de React.
-       */
-      window.location.href = `/confirmation?order=${encodeURIComponent(
-        orderNumber
-      )}`;
-    } catch (err: unknown) {
-      console.log("ERROR GENERAL:", err);
+});
 
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Error creando pedido");
-      }
 
-      setLoading(false);
-    }
-  }
+},[]);
 
-  return (
-    <main className="min-h-screen bg-gray-100 p-5 pb-10">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-4xl font-extrabold text-gray-900 mb-6">
-          🛒 Finalizar pedido
-        </h1>
 
-        <div className="space-y-5">
-          {/* DATOS DEL CLIENTE */}
 
-          <div className="bg-white rounded-3xl shadow-md p-6">
-            <h2 className="text-xl font-extrabold text-teal-700 mb-4">
-              Datos del cliente
-            </h2>
 
-            <input
-              type="text"
-              placeholder="Nombre completo"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={loading}
-              className="w-full border rounded-2xl p-4 mb-3 outline-none focus:border-orange-500"
-            />
 
-            <input
-              type="tel"
-              placeholder="WhatsApp"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              disabled={loading}
-              className="w-full border rounded-2xl p-4 outline-none focus:border-orange-500"
-            />
-          </div>
 
-          {/* TIPO DE ENTREGA */}
 
-          <div className="bg-white rounded-3xl shadow-md p-6">
-            <h2 className="text-xl font-extrabold text-teal-700 mb-4">
-              Tipo de entrega
-            </h2>
 
-            <button
-              type="button"
-              onClick={() => setDelivery("Recoger")}
-              disabled={loading}
-              className={`w-full text-left p-5 rounded-2xl border-2 mb-3 ${
-                delivery === "Recoger"
-                  ? "border-orange-500 bg-orange-50"
-                  : "border-gray-200"
-              }`}
-            >
-              🚶 Recoger en negocio
-            </button>
+async function confirmOrder(){
 
-            <button
-              type="button"
-              onClick={() => setDelivery("Domicilio")}
-              disabled={loading}
-              className={`w-full text-left p-5 rounded-2xl border-2 ${
-                delivery === "Domicilio"
-                  ? "border-orange-500 bg-orange-50"
-                  : "border-gray-200"
-              }`}
-            >
-              🛵 Envío a domicilio
-            </button>
 
-            {delivery === "Domicilio" && (
-              <input
-                type="text"
-                placeholder="Dirección"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                disabled={loading}
-                className="mt-4 w-full border rounded-2xl p-4 outline-none focus:border-orange-500"
-              />
-            )}
-          </div>
 
-          {/* FORMA DE PAGO */}
+if(!name.trim() || !phone.trim()){
 
-          <div className="bg-white rounded-3xl shadow-md p-6">
-            <h2 className="text-xl font-extrabold text-teal-700 mb-4">
-              Forma de pago
-            </h2>
 
-            <button
-              type="button"
-              onClick={() => setPaymentMethod("EFECTIVO")}
-              disabled={loading}
-              className={`w-full p-5 rounded-2xl border-2 mb-3 text-left ${
-                paymentMethod === "EFECTIVO"
-                  ? "border-orange-500 bg-orange-50"
-                  : "border-gray-200"
-              }`}
-            >
-              💵 Efectivo
-            </button>
+setError(
+"Completa nombre y WhatsApp"
+);
 
-            <button
-              type="button"
-              onClick={() => setPaymentMethod("TRANSFERENCIA")}
-              disabled={loading}
-              className={`w-full p-5 rounded-2xl border-2 text-left ${
-                paymentMethod === "TRANSFERENCIA"
-                  ? "border-orange-500 bg-orange-50"
-                  : "border-gray-200"
-              }`}
-            >
-              🏦 Transferencia
-            </button>
-          </div>
 
-          {/* NOTAS */}
+return;
 
-          <div className="bg-white rounded-3xl shadow-md p-6">
-            <h2 className="text-xl font-extrabold text-teal-700 mb-4">
-              Notas
-            </h2>
 
-            <textarea
-              placeholder="Alguna indicación para tu pedido..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              disabled={loading}
-              className="w-full border rounded-2xl p-4 h-28 outline-none focus:border-orange-500"
-            />
-          </div>
+}
 
-          {/* TOTAL */}
 
-          <div className="bg-white rounded-3xl shadow-md p-6">
-            <div className="flex justify-between text-2xl font-extrabold mb-5">
-              <span>Total</span>
 
-              <span className="text-orange-600">${total}</span>
-            </div>
 
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 rounded-2xl p-4 font-bold mb-4">
-                {error}
-              </div>
-            )}
 
-            <button
-              type="button"
-              onClick={confirmOrder}
-              disabled={loading}
-              className={`w-full py-5 rounded-full font-extrabold text-lg text-white ${
-                loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-orange-500 hover:bg-orange-600"
-              }`}
-            >
-              {loading ? "Procesando..." : "Confirmar pedido"}
-            </button>
-          </div>
-        </div>
-      </div>
-    </main>
-  );
+if(
+delivery==="Domicilio"
+&&
+!address.trim()
+){
+
+
+setError(
+"Completa la dirección"
+);
+
+
+return;
+
+
+}
+
+
+
+
+
+
+if(items.length===0){
+
+
+setError(
+"El carrito está vacío"
+);
+
+
+return;
+
+
+}
+
+
+
+
+
+setLoading(true);
+
+setError("");
+
+
+
+
+
+try{
+
+
+
+const orderItems = items.map((item:any)=>(
+
+
+{
+
+product_id:item.id,
+
+size:item.size,
+
+quantity:item.quantity,
+
+notes:item.notes || ""
+
+
+}
+
+
+));
+
+
+
+
+
+
+
+
+const {data,error}=await supabase.rpc(
+
+"create_order",
+
+{
+
+
+p_customer_name:name,
+
+p_customer_phone:phone,
+
+p_delivery_type:delivery,
+
+p_address:address,
+
+p_notes:notes,
+
+p_payment_method:paymentMethod,
+
+p_items:orderItems
+
+
+}
+
+);
+
+
+
+
+
+
+
+
+if(error){
+
+
+console.log(
+"ERROR CREANDO PEDIDO:",
+error
+);
+
+
+setError(error.message);
+
+
+setLoading(false);
+
+
+return;
+
+
+}
+
+
+
+
+
+
+
+const orderNumber=data?.order_number;
+
+
+
+
+
+if(!orderNumber){
+
+
+setError(
+"Pedido creado pero sin número de confirmación"
+);
+
+
+setLoading(false);
+
+
+return;
+
+
+}
+
+
+
+
+
+
+try{
+
+
+localStorage.removeItem("cart");
+
+
+}catch(e){
+
+
+console.log(e);
+
+
+}
+
+
+
+
+
+
+
+window.location.href =
+
+`/confirmation?order=${encodeURIComponent(orderNumber)}`;
+
+
+
+}catch(err:any){
+
+
+
+console.log(err);
+
+
+setError(
+err.message || "Error creando pedido"
+);
+
+
+
+setLoading(false);
+
+
+
+}
+
+
+
+}
+
+
+
+
+
+
+return (
+
+<main className="
+min-h-screen
+bg-gray-100
+p-5
+pb-10
+">
+
+
+<div className="
+max-w-3xl
+mx-auto
+">
+
+
+<h1 className="
+text-4xl
+font-extrabold
+text-gray-900
+mb-6
+">
+
+🛒 Finalizar pedido
+
+</h1>
+<h2 className="
+text-xl
+font-extrabold
+text-teal-700
+mb-4
+">
+
+Datos del cliente
+
+</h2>
+
+
+<div className="
+bg-white
+rounded-3xl
+shadow-md
+p-6
+space-y-3
+">
+
+
+<input
+
+type="text"
+
+placeholder="Nombre completo"
+
+value={name}
+
+onChange={(e)=>
+setName(e.target.value)
+}
+
+disabled={loading}
+
+className="
+w-full
+border
+rounded-2xl
+p-4
+"
+
+/>
+
+
+
+<input
+
+type="tel"
+
+placeholder="WhatsApp"
+
+value={phone}
+
+onChange={(e)=>
+setPhone(e.target.value)
+}
+
+disabled={loading}
+
+className="
+w-full
+border
+rounded-2xl
+p-4
+"
+
+/>
+
+
+</div>
+
+
+
+
+
+
+
+<div className="
+bg-white
+rounded-3xl
+shadow-md
+p-6
+mt-5
+">
+
+
+<h2 className="
+text-xl
+font-extrabold
+text-teal-700
+mb-4
+">
+
+🚚 Tipo de entrega
+
+</h2>
+
+
+
+
+<button
+
+type="button"
+
+onClick={()=>
+setDelivery("Recoger")
+}
+
+disabled={loading}
+
+className={`
+w-full
+p-5
+rounded-2xl
+border-2
+mb-3
+text-left
+
+${
+delivery==="Recoger"
+
+?
+
+"border-orange-500 bg-orange-50"
+
+:
+
+"border-gray-200"
+
+}
+
+`}
+
+>
+
+🚶 Recoger en negocio
+
+</button>
+
+
+
+
+
+
+<button
+
+type="button"
+
+onClick={()=>
+setDelivery("Domicilio")
+}
+
+disabled={loading}
+
+className={`
+w-full
+p-5
+rounded-2xl
+border-2
+text-left
+
+${
+delivery==="Domicilio"
+
+?
+
+"border-orange-500 bg-orange-50"
+
+:
+
+"border-gray-200"
+
+}
+
+`}
+
+>
+
+🛵 Envío a domicilio
+
+</button>
+
+
+
+
+
+
+
+{
+
+delivery==="Domicilio" &&
+
+<input
+
+type="text"
+
+placeholder="Dirección"
+
+value={address}
+
+onChange={(e)=>
+setAddress(e.target.value)
+}
+
+disabled={loading}
+
+className="
+mt-4
+w-full
+border
+rounded-2xl
+p-4
+"
+
+/>
+
+}
+
+
+
+</div>
+
+
+
+
+
+
+
+<div className="
+bg-white
+rounded-3xl
+shadow-md
+p-6
+mt-5
+">
+
+
+<h2 className="
+text-xl
+font-extrabold
+text-teal-700
+mb-4
+">
+
+💳 Forma de pago
+
+</h2>
+
+
+
+
+
+
+
+<button
+
+type="button"
+
+onClick={()=>
+setPaymentMethod("EFECTIVO")
+}
+
+disabled={loading}
+
+className={`
+w-full
+p-5
+rounded-2xl
+border-2
+mb-3
+text-left
+
+${
+paymentMethod==="EFECTIVO"
+
+?
+
+"border-orange-500 bg-orange-50"
+
+:
+
+"border-gray-200"
+
+}
+
+`}
+
+>
+
+💵 Efectivo
+
+</button>
+
+
+
+
+
+
+
+<button
+
+type="button"
+
+onClick={()=>
+setPaymentMethod("TRANSFERENCIA")
+}
+
+disabled={loading}
+
+className={`
+w-full
+p-5
+rounded-2xl
+border-2
+text-left
+
+${
+paymentMethod==="TRANSFERENCIA"
+
+?
+
+"border-orange-500 bg-orange-50"
+
+:
+
+"border-gray-200"
+
+}
+
+`}
+
+>
+
+🏦 Transferencia
+
+</button>
+
+
+
+
+
+
+
+
+{
+
+paymentMethod==="TRANSFERENCIA"
+
+&&
+
+business
+
+&&
+
+(
+
+<div className="
+mt-5
+bg-teal-50
+border
+border-teal-200
+rounded-2xl
+p-5
+">
+
+
+<h3 className="
+font-black
+text-teal-700
+text-lg
+mb-3
+">
+
+📲 Datos para transferencia
+
+</h3>
+
+
+
+
+<p>
+
+<b>Banco:</b>{" "}
+
+{business.bank_name}
+
+</p>
+
+
+
+<p>
+
+<b>Titular:</b>{" "}
+
+{business.account_holder}
+
+</p>
+
+
+
+<p>
+
+<b>Cuenta:</b>{" "}
+
+{business.bank_account}
+
+</p>
+
+
+
+<p>
+
+<b>CLABE:</b>{" "}
+
+{business.bank_clabe}
+
+</p>
+
+
+
+
+
+<p className="
+mt-4
+text-sm
+text-gray-600
+">
+
+Después de realizar tu pago envía comprobante por WhatsApp.
+
+</p>
+
+
+
+
+
+
+{
+
+business.whatsapp &&
+
+<a
+
+href={
+
+`https://wa.me/${business.whatsapp.replace(/\D/g,"")}`
+
+}
+
+target="_blank"
+
+className="
+block
+mt-4
+bg-green-600
+text-white
+text-center
+rounded-xl
+py-3
+font-black
+"
+
+>
+
+📲 Enviar comprobante
+
+</a>
+
+}
+
+
+
+</div>
+
+)
+
+}
+
+
+
+</div>
+
+
+
+
+
+
+
+<div className="
+bg-white
+rounded-3xl
+shadow-md
+p-6
+mt-5
+">
+
+
+<h2 className="
+text-xl
+font-extrabold
+text-teal-700
+mb-4
+">
+
+📝 Notas
+
+</h2>
+
+
+
+
+
+<textarea
+
+placeholder="Alguna indicación para tu pedido..."
+
+value={notes}
+
+onChange={(e)=>
+setNotes(e.target.value)
+}
+
+disabled={loading}
+
+className="
+w-full
+border
+rounded-2xl
+p-4
+h-28
+"
+
+/>
+
+
+
+</div>
+
+
+
+
+
+
+
+<div className="
+bg-white
+rounded-3xl
+shadow-md
+p-6
+mt-5
+">
+
+
+<div className="
+flex
+justify-between
+text-2xl
+font-extrabold
+mb-5
+">
+
+
+<span>
+
+Total
+
+</span>
+
+
+
+<span className="
+text-orange-600
+">
+
+${total}
+
+</span>
+
+
+</div>
+
+
+
+
+
+
+{
+
+error &&
+
+<div className="
+bg-red-50
+border
+border-red-200
+text-red-600
+rounded-2xl
+p-4
+font-bold
+mb-4
+">
+
+{error}
+
+</div>
+
+}
+
+
+
+
+
+
+
+<button
+
+type="button"
+
+onClick={confirmOrder}
+
+disabled={loading}
+
+className={`
+w-full
+py-5
+rounded-full
+font-extrabold
+text-lg
+text-white
+
+${
+loading
+
+?
+
+"bg-gray-400"
+
+:
+
+"bg-orange-500 hover:bg-orange-600"
+
+}
+
+`}
+
+>
+
+{
+
+loading
+
+?
+
+"Procesando..."
+
+:
+
+"Confirmar pedido"
+
+}
+
+</button>
+
+
+
+
+</div>
+
+
+
+
+</div>
+
+
+</main>
+
+
+);
+
+
 }
