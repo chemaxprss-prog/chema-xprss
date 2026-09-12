@@ -717,7 +717,7 @@ filter===item[0]
 
 <span>
 
-{counts[item[0]]}
+{counts[item[0] as keyof typeof counts]}
 
 </span>
 
