@@ -6,15 +6,28 @@ import { supabase } from "@/lib/supabase";
 
 export default function AdminOrdersPage(){
 
+
 const [orders,setOrders]=useState<any[]>([]);
+
 const [loading,setLoading]=useState(true);
+
 const [updating,setUpdating]=useState<number|null>(null);
+
+
+const [filter,setFilter]=useState("TODOS");
+
+
+const [search,setSearch]=useState("");
+
+
 
 
 
 useEffect(()=>{
 
+
 loadOrders();
+
 
 
 const channel = supabase
@@ -51,6 +64,9 @@ supabase.removeChannel(channel);
 
 
 },[]);
+
+
+
 
 
 
@@ -101,6 +117,131 @@ setLoading(false);
 
 
 }
+
+
+
+
+
+
+
+
+const counts = {
+
+
+TODOS:
+orders.length,
+
+
+PENDIENTE:
+orders.filter(
+(o)=>o.status==="PENDIENTE"
+).length,
+
+
+CONFIRMADO:
+orders.filter(
+(o)=>o.status==="CONFIRMADO"
+).length,
+
+
+PREPARANDO:
+orders.filter(
+(o)=>o.status==="PREPARANDO"
+).length,
+
+
+LISTO:
+orders.filter(
+(o)=>o.status==="LISTO"
+).length,
+
+
+ENTREGADO:
+orders.filter(
+(o)=>o.status==="ENTREGADO"
+).length,
+
+
+};
+
+
+
+
+
+
+
+
+const filteredOrders = orders.filter((order)=>{
+
+
+const matchesStatus =
+
+filter==="TODOS"
+
+?
+
+true
+
+:
+
+order.status===filter;
+
+
+
+
+
+const text = search
+.toLowerCase()
+.trim();
+
+
+
+
+
+const matchesSearch =
+
+text===""
+
+?
+
+true
+
+:
+
+order.order_number
+?.toLowerCase()
+.includes(text)
+
+||
+
+order.customer_name
+?.toLowerCase()
+.includes(text)
+
+||
+
+order.customer_phone
+?.includes(text);
+
+
+
+
+
+
+return (
+
+matchesStatus
+
+&&
+
+matchesSearch
+
+);
+
+
+});
+
+
 
 
 
@@ -184,6 +325,9 @@ loadOrders();
 
 
 
+
+
+
 function sendDeliveryWhatsApp(order:any){
 
 
@@ -195,25 +339,19 @@ order.customer_phone.replace(
 
 
 
-let message="";
+const message =
 
+order.delivery_type==="Domicilio"
 
+?
 
-if(order.delivery_type==="Domicilio"){
-
-
-message =
 `Hola ${order.customer_name} 👋
 
 Tu pedido ${order.order_number} ya va en camino 🛵
 
-Gracias por comprar en CHEMA XPRSS 🍤`;
+Gracias por comprar en CHEMA XPRSS 🍤`
 
-
-}else{
-
-
-message =
+:
 
 `Hola ${order.customer_name} 👋
 
@@ -222,14 +360,12 @@ Tu pedido ${order.order_number} ya está listo para recoger.
 Gracias por comprar en CHEMA XPRSS.`;
 
 
-}
 
 
 
 const url =
-`https://wa.me/${phone}?text=${encodeURIComponent(
-message
-)}`;
+
+`https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
 
 
@@ -240,6 +376,7 @@ url,
 
 
 }
+
 
 
 
@@ -280,22 +417,31 @@ next:"LISTO"
 case "LISTO":
 
 return {
+
 text:
 order.delivery_type==="Domicilio"
+
 ?
+
 "Enviar pedido"
+
 :
+
 "Avisar listo para recoger",
 
 next:"EN_CAMINO"
+
 };
 
 
 case "EN_CAMINO":
 
 return {
+
 text:"Entregar pedido",
+
 next:"ENTREGADO"
+
 };
 
 
@@ -306,10 +452,7 @@ return null;
 
 }
 
-
 }
-
-
 
 
 
@@ -320,29 +463,35 @@ function statusStyle(status:string){
 
 const styles:any={
 
+
 PENDIENTE:
-"bg-red-600 text-white",
+"bg-red-100 text-red-700",
+
 
 CONFIRMADO:
-"bg-blue-600 text-white",
+"bg-blue-100 text-blue-700",
+
 
 PREPARANDO:
-"bg-yellow-400 text-gray-900",
+"bg-yellow-100 text-yellow-700",
+
 
 LISTO:
-"bg-purple-600 text-white",
+"bg-purple-100 text-purple-700",
+
 
 EN_CAMINO:
-"bg-indigo-600 text-white",
+"bg-indigo-100 text-indigo-700",
+
 
 ENTREGADO:
-"bg-green-600 text-white"
+"bg-green-100 text-green-700"
+
 
 };
 
 
-return styles[status] ||
-"bg-gray-600 text-white";
+return styles[status] || "bg-gray-100 text-gray-700";
 
 
 }
@@ -351,7 +500,10 @@ return styles[status] ||
 
 
 
+
+
 function formatDate(date:string){
+
 
 return new Date(date).toLocaleString(
 "es-MX",
@@ -365,6 +517,7 @@ minute:"2-digit"
 }
 
 );
+
 
 }
 if(loading){
@@ -392,39 +545,200 @@ Cargando pedidos...
 
 
 
+
 return (
 
 <main className="
 min-h-screen
 bg-orange-50
-p-6
+p-5
 ">
 
+
+
 <div className="
-max-w-6xl
+max-w-7xl
 mx-auto
 ">
 
 
+
+
+
 <h1 className="
-text-4xl
+text-3xl
 font-black
-mb-2
+text-gray-900
+mb-1
 ">
 
-Pedidos
+Control de pedidos CHEMA XPRSS
 
 </h1>
 
 
+
 <p className="
 text-gray-500
+mb-6
+">
+
+Gestiona y actualiza tus pedidos
+
+</p>
+
+
+
+
+
+
+
+{/* BUSCADOR */}
+
+
+
+<div className="
+bg-white
+rounded-2xl
+shadow-sm
+p-4
+mb-5
+">
+
+
+<input
+
+type="text"
+
+placeholder="🔎 Buscar pedido, cliente o teléfono..."
+
+value={search}
+
+onChange={(e)=>
+setSearch(e.target.value)
+}
+
+className="
+w-full
+border
+rounded-xl
+p-4
+outline-none
+focus:ring-2
+focus:ring-orange-400
+"
+
+/>
+
+
+</div>
+
+
+
+
+
+
+
+
+{/* FILTROS */}
+
+
+
+<div className="
+flex
+flex-wrap
+gap-3
 mb-8
 ">
 
-Panel administrativo CHEMA XPRSS
 
-</p>
+
+
+
+{
+
+[
+
+["TODOS","Todos","bg-gray-100 text-gray-700"],
+
+["PENDIENTE","Pendientes","bg-red-100 text-red-700"],
+
+["CONFIRMADO","Confirmados","bg-blue-100 text-blue-700"],
+
+["PREPARANDO","Preparando","bg-yellow-100 text-yellow-700"],
+
+["LISTO","Listos","bg-purple-100 text-purple-700"],
+
+["ENTREGADO","Entregados","bg-green-100 text-green-700"]
+
+].map((item:any)=>(
+
+
+
+<button
+
+key={item[0]}
+
+onClick={()=>setFilter(item[0])}
+
+className={`
+
+px-5
+py-3
+rounded-full
+font-black
+text-sm
+transition
+
+${item[2]}
+
+${
+
+filter===item[0]
+
+?
+
+"ring-2 ring-gray-900 scale-105"
+
+:
+
+""
+
+}
+
+`}
+
+>
+
+
+{item[1]}
+
+&nbsp;
+
+<span>
+
+{counts[item[0]]}
+
+</span>
+
+
+
+</button>
+
+
+))
+
+
+}
+
+
+
+
+</div>
+
+
+
+
 
 
 
@@ -440,13 +754,19 @@ gap-6
 
 
 
+
+
+
+
 {
 
-orders.map((order:any)=>{
+filteredOrders.map((order:any)=>{
 
 
 const action =
 nextAction(order);
+
+
 
 
 
@@ -459,7 +779,7 @@ key={order.id}
 className="
 bg-white
 rounded-3xl
-shadow-xl
+shadow-lg
 overflow-hidden
 "
 
@@ -467,12 +787,22 @@ overflow-hidden
 
 
 
+
+
 <div className="
-bg-gray-900
-text-white
 p-5
+border-b
 ">
 
+
+<div className="
+flex
+justify-between
+items-start
+">
+
+
+<div>
 
 <h2 className="
 text-xl
@@ -485,8 +815,8 @@ font-black
 
 
 <p className="
-text-gray-400
 text-sm
+text-gray-500
 ">
 
 {formatDate(order.created_at)}
@@ -494,15 +824,20 @@ text-sm
 </p>
 
 
+</div>
+
+
+
+
+
 
 <span className={`
 
-inline-block
-mt-4
-px-4
-py-2
+px-3
+py-1
 rounded-full
-font-bold
+text-xs
+font-black
 
 ${statusStyle(order.status)}
 
@@ -513,7 +848,13 @@ ${statusStyle(order.status)}
 </span>
 
 
+
 </div>
+
+
+
+</div>
+
 
 
 
@@ -527,9 +868,16 @@ space-y-4
 ">
 
 
+
+
+
+
 <div>
 
-<p className="font-bold">
+
+<p className="
+font-black
+">
 
 👤 {order.customer_name}
 
@@ -543,9 +891,11 @@ space-y-4
 </p>
 
 
+
 <p>
 
 {
+
 order.delivery_type==="Domicilio"
 
 ?
@@ -568,8 +918,13 @@ order.delivery_type==="Domicilio"
 
 
 
+
+<div>
+
+
 <h3 className="
 font-black
+mb-2
 ">
 
 🍽 Productos
@@ -579,34 +934,50 @@ font-black
 
 
 
-
 {
 
 order.order_items?.map((item:any)=>(
+
 
 <div
 
 key={item.id}
 
 className="
-bg-gray-100
+bg-gray-50
 rounded-xl
 p-3
+mb-2
 flex
 justify-between
 "
 
 >
 
-<span>
+
+<div>
+
+<p className="
+font-bold
+">
 
 {item.product_name}
 
-<br/>
+</p>
+
+
+<p className="
+text-sm
+text-gray-500
+">
 
 {item.size} x {item.quantity}
 
-</span>
+</p>
+
+
+</div>
+
 
 
 <b>
@@ -621,7 +992,15 @@ ${item.subtotal}
 
 ))
 
+
 }
+
+
+
+
+</div>
+
+
 
 
 
@@ -644,6 +1023,7 @@ TOTAL
 </span>
 
 
+
 <span className="
 text-orange-600
 ">
@@ -657,6 +1037,10 @@ ${order.total}
 
 
 
+
+
+
+
 </div>
 
 
@@ -665,11 +1049,13 @@ ${order.total}
 
 
 
+
 <div className="
-p-5
 bg-gray-50
+p-5
 space-y-3
 ">
+
 
 
 
@@ -679,6 +1065,7 @@ space-y-3
 
 action &&
 
+
 <button
 
 disabled={updating===order.id}
@@ -687,8 +1074,11 @@ onClick={async()=>{
 
 
 await updateOrderStatus(
+
 order.id,
+
 action.next
+
 );
 
 
@@ -703,6 +1093,7 @@ sendDeliveryWhatsApp(order);
 
 }}
 
+
 className="
 w-full
 bg-orange-500
@@ -714,6 +1105,7 @@ font-black
 "
 
 >
+
 
 {
 
@@ -729,9 +1121,13 @@ action.text
 
 }
 
+
 </button>
 
+
+
 }
+
 
 
 
@@ -749,13 +1145,19 @@ order.payment_status!=="PAGADO"
 
 &&
 
+
 <button
 
 onClick={()=>updateOrderStatus(
+
 order.id,
+
 order.status,
+
 "PAGADO"
+
 )}
+
 
 className="
 w-full
@@ -772,7 +1174,10 @@ Confirmar pago
 
 </button>
 
+
+
 }
+
 
 
 
@@ -805,7 +1210,13 @@ font-bold
 
 
 
+
+
+
 </div>
+
+
+
 
 
 
@@ -822,13 +1233,44 @@ font-bold
 
 
 
+
+
+{
+
+filteredOrders.length===0 &&
+
+
+<div className="
+col-span-full
+bg-white
+rounded-3xl
+p-10
+text-center
+font-bold
+text-gray-500
+">
+
+No hay pedidos encontrados
+
+
 </div>
+
+
+}
+
+
+
+</div>
+
+
+
 
 
 </div>
 
 
 </main>
+
 
 );
 

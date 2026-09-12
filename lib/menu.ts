@@ -9,20 +9,27 @@ export async function getMenu() {
     .from("products")
 
     .select(`
+
       id,
       name,
       description,
       image,
-      price_half,
-      price_liter,
-      price_single,
       position,
 
       categories (
         id,
         name,
         image
+      ),
+
+      product_variants (
+        id,
+        name,
+        code,
+        price,
+        active
       )
+
     `)
 
     .eq("active", true)
@@ -31,9 +38,9 @@ export async function getMenu() {
 
 
 
-  if (error) {
+  if(error){
 
-    console.log(error);
+    console.log("ERROR GET MENU:", error);
 
     return [];
 
@@ -41,54 +48,89 @@ export async function getMenu() {
 
 
 
-  return data.map((product:any)=>(
+  console.log(
+    "PRODUCTOS MENU COMPLETO:",
+    data
+  );
 
 
-    {
+
+  return (data || []).map((product:any)=>{
+
+
+    const variants =
+
+      (product.product_variants || [])
+
+      .filter(
+        (variant:any)=>variant.active
+      )
+
+      .map((variant:any)=>{
+
+
+        return {
+
+          id:variant.id,
+
+          /*
+          Este es el nombre visible
+          ejemplo:
+          Litro
+          Individual
+          1/2 Litro
+          */
+
+          name:variant.name,
+
+
+          /*
+          Este es el código interno
+          ejemplo:
+          LITER
+          SINGLE
+          HALF
+          */
+
+          code:variant.code,
+
+
+          price:Number(
+            variant.price
+          )
+
+
+        };
+
+
+      });
+
+
+
+
+    console.log(
+      "VARIANTES PRODUCTO:",
+      product.name,
+      variants
+    );
+
+
+
+
+    return {
+
 
       ...product,
 
 
-      sizes:[
+      sizes:variants
 
 
-        product.price_half
-        ?
-
-        {
-          name:"1/2 Litro",
-          label:"1/2 Litro",
-          price:product.price_half
-        }
-
-        :
-
-        null,
+    };
 
 
+  });
 
-        product.price_liter
-        ?
-
-        {
-          name:"Litro",
-          label:"Litro",
-          price:product.price_liter
-        }
-
-        :
-
-        null
-
-
-      ].filter(Boolean)
-
-
-
-    }
-
-
-  ));
 
 
 }

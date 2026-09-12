@@ -62,6 +62,9 @@ overflow-hidden
 ">
 
 
+{
+category.image ?
+
 <img
 
 src={category.image}
@@ -75,6 +78,25 @@ object-cover
 "
 
 />
+
+:
+
+<div className="
+w-full
+h-full
+bg-gray-200
+flex
+items-center
+justify-center
+text-gray-500
+font-bold
+">
+
+🍤
+
+</div>
+
+}
 
 
 <div className="

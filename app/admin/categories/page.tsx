@@ -19,16 +19,11 @@ const [loading,setLoading]=useState(true);
 
 
 
-
-
 useEffect(()=>{
 
 loadCategories();
 
 },[]);
-
-
-
 
 
 
@@ -46,21 +41,20 @@ return;
 }
 
 
-
 const value=search.toLowerCase();
-
 
 
 setFiltered(
 
 categories.filter((category)=>
 
-category.name?.toLowerCase().includes(value)
+category.name
+?.toLowerCase()
+.includes(value)
 
 )
 
 );
-
 
 
 },[search,categories]);
@@ -71,20 +65,27 @@ category.name?.toLowerCase().includes(value)
 
 
 
-
-
 async function loadCategories(){
 
 
-const {data,error}=await supabase
+const {
+
+data,
+
+error
+
+}=await supabase
 
 .from("categories")
 
 .select("*")
 
-.order("position",{ascending:true});
-
-
+.order(
+"position",
+{
+ascending:true
+}
+);
 
 
 
@@ -105,7 +106,6 @@ setFiltered(data || []);
 setLoading(false);
 
 
-
 }
 
 
@@ -115,9 +115,115 @@ setLoading(false);
 
 
 
+async function moveCategory(
+
+category:any,
+
+direction:"up"|"down"
+
+){
+
+
+const index = categories.findIndex(
+
+(item)=>item.id===category.id
+
+);
+
+
+
+if(
+direction==="up"
+&&
+index===0
+){
+
+return;
+
+}
+
+
+
+if(
+direction==="down"
+&&
+index===categories.length-1
+){
+
+return;
+
+}
+
+
+
+const targetIndex =
+
+direction==="up"
+
+?
+
+index-1
+
+:
+
+index+1;
+
+
+
+const target = categories[targetIndex];
+
+
+
+
+await supabase
+
+.from("categories")
+
+.update({
+
+position:target.position
+
+})
+
+.eq(
+"id",
+category.id
+);
+
+
+
+
+
+await supabase
+
+.from("categories")
+
+.update({
+
+position:category.position
+
+})
+
+.eq(
+"id",
+target.id
+);
+
+
+
+
+
+loadCategories();
+
+
+}
+
+
+
+
+
 
 if(loading){
-
 
 return (
 
@@ -135,17 +241,7 @@ Cargando categorías...
 
 );
 
-
 }
-
-
-
-
-
-
-
-
-
 return (
 
 <main className="
@@ -163,9 +259,6 @@ mx-auto
 
 
 
-
-
-
 <div className="
 flex
 flex-col
@@ -176,9 +269,7 @@ mb-6
 ">
 
 
-
 <div>
-
 
 <h1 className="
 text-4xl
@@ -191,21 +282,16 @@ text-gray-900
 </h1>
 
 
-
 <p className="
 text-gray-600
 mt-2
 ">
 
-Organización del menú CHEMA XPRSS
+Orden del menú CHEMA XPRSS
 
 </p>
 
-
 </div>
-
-
-
 
 
 
@@ -223,7 +309,6 @@ py-4
 rounded-full
 font-bold
 text-center
-shadow-md
 "
 
 >
@@ -233,11 +318,7 @@ shadow-md
 </Link>
 
 
-
 </div>
-
-
-
 
 
 
@@ -247,9 +328,9 @@ shadow-md
 <div className="
 bg-white
 rounded-3xl
-shadow-md
 p-5
 mb-6
+shadow
 ">
 
 
@@ -266,45 +347,11 @@ w-full
 border
 rounded-2xl
 p-4
-focus:outline-none
-focus:border-orange-500
 "
 
-/>
-
-
+ />
 
 </div>
-
-
-
-
-
-
-
-
-
-{
-
-filtered.length===0 &&
-
-
-<div className="
-bg-white
-rounded-3xl
-shadow-md
-p-6
-text-gray-500
-">
-
-No hay categorías registradas.
-
-</div>
-
-
-}
-
-
 
 
 
@@ -321,10 +368,6 @@ gap-5
 
 
 
-
-
-
-
 {
 
 filtered.map((category)=>(
@@ -338,14 +381,11 @@ className="
 bg-white
 rounded-3xl
 shadow-md
-p-6
+p-5
 border
-border-gray-100
 "
 
 >
-
-
 
 
 
@@ -355,7 +395,6 @@ border-gray-100
 
 category.image &&
 
-
 <img
 
 src={category.image}
@@ -364,17 +403,15 @@ alt={category.name}
 
 className="
 w-full
-h-48
+h-44
 object-cover
-rounded-3xl
-mb-5
+rounded-2xl
+mb-4
 "
 
 />
 
-
 }
-
 
 
 
@@ -390,9 +427,12 @@ mb-4
 ">
 
 
+<div>
+
+
 <h2 className="
-text-2xl
-font-extrabold
+text-xl
+font-black
 text-teal-700
 ">
 
@@ -401,25 +441,75 @@ text-teal-700
 </h2>
 
 
-
-<span className="
-bg-orange-100
-text-orange-700
-px-3
-py-1
-rounded-full
-font-bold
+<p className="
 text-sm
+text-gray-500
 ">
 
-#{category.position}
+Orden actual: {category.position}
 
-</span>
+</p>
+
+
+</div>
+
+
+
+
+
+<div className="
+flex
+gap-2
+">
+
+
+<button
+
+onClick={()=>moveCategory(category,"up")}
+
+className="
+w-10
+h-10
+rounded-full
+bg-gray-900
+text-white
+font-black
+"
+
+>
+
+⬆
+
+</button>
+
+
+
+
+<button
+
+onClick={()=>moveCategory(category,"down")}
+
+className="
+w-10
+h-10
+rounded-full
+bg-gray-900
+text-white
+font-black
+"
+
+>
+
+⬇
+
+</button>
 
 
 
 </div>
 
+
+</div>
 
 
 
@@ -432,29 +522,31 @@ text-sm
 bg-gray-50
 rounded-2xl
 p-4
+mb-5
 ">
 
 
 <p className="
+font-bold
 text-gray-700
 ">
 
 📂 Orden del menú:
 
-{" "}
+<span className="
+text-orange-600
+ml-2
+">
 
-<strong>
+#{category.position}
 
-{category.position}
+</span>
 
-</strong>
 
 </p>
 
 
-
 </div>
-
 
 
 
@@ -467,17 +559,15 @@ text-gray-700
 href={`/admin/categories/edit/${category.id}`}
 
 className="
-mt-5
 block
 w-full
 bg-orange-500
 hover:bg-orange-600
 text-white
-py-4
+text-center
+py-3
 rounded-full
 font-bold
-text-center
-shadow-md
 "
 
 >
@@ -485,7 +575,6 @@ shadow-md
 Editar categoría
 
 </Link>
-
 
 
 
@@ -503,12 +592,7 @@ Editar categoría
 
 
 
-
-
 </div>
-
-
-
 
 
 
