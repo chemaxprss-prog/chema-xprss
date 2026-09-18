@@ -29,7 +29,8 @@ const menu = (products || []).reduce(
 (acc:any[], product:any)=>{
 
 
-const categoryName = product.categories?.name || "Sin categoría";
+const categoryName =
+product.categories?.name || "Sin categoría";
 
 
 
@@ -81,7 +82,7 @@ description:product.description,
 sizes:[
 
 
-...(product.price_half
+...(Number(product.price_half) > 0
 
 ?
 
@@ -91,7 +92,7 @@ sizes:[
 
 name:"1/2 Litro",
 
-price:product.price_half
+price:Number(product.price_half)
 
 }
 
@@ -106,7 +107,7 @@ price:product.price_half
 
 
 
-...(product.price_liter
+...(Number(product.price_liter) > 0
 
 ?
 
@@ -116,7 +117,7 @@ price:product.price_half
 
 name:"Litro",
 
-price:product.price_liter
+price:Number(product.price_liter)
 
 }
 
@@ -131,8 +132,7 @@ price:product.price_liter
 
 
 
-
-...(product.price_single
+...(Number(product.price_single) > 0
 
 ?
 
@@ -142,7 +142,7 @@ price:product.price_liter
 
 name:"Unidad",
 
-price:product.price_single
+price:Number(product.price_single)
 
 }
 

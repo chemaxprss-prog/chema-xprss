@@ -1048,9 +1048,7 @@ space-y-2
 
 
 {
-
-product.price_half &&
-
+Number(product.price_half) > 0 &&
 <button
 
 onClick={()=>addProduct(
@@ -1085,9 +1083,7 @@ font-black
 
 
 {
-
-product.price_liter &&
-
+Number(product.price_liter) > 0 &&
 <button
 
 onClick={()=>addProduct(
@@ -1121,9 +1117,7 @@ Litro ${product.price_liter}
 
 
 {
-
-product.price_single &&
-
+Number(product.price_single) > 0 &&
 <button
 
 onClick={()=>addProduct(
