@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import LogoutButton from "@/components/LogoutButton";
 
@@ -26,6 +26,9 @@ const [pending,setPending] = useState(0);
 const [kitchen,setKitchen] = useState(0);
 
 const [alertsEnabled,setAlertsEnabled] = useState(false);
+
+
+const alertsRef = useRef(false);
 
 
 
@@ -67,12 +70,15 @@ payload
 
 
 
-if(alertsEnabled){
+if(alertsRef.current){
 
 
 const audio = new Audio(
 "/sounds/new-order.mp3"
 );
+
+
+audio.volume = 1;
 
 
 audio.play()
@@ -150,7 +156,7 @@ supabase.removeChannel(channel);
 
 
 
-},[alertsEnabled]);
+},[]);
 
 
 
@@ -229,11 +235,11 @@ function enableAlerts(){
 
 
 const audio = new Audio(
-
 "/sounds/new-order.mp3"
-
 );
 
+
+audio.volume = 1;
 
 
 audio.play()
@@ -241,7 +247,15 @@ audio.play()
 .then(()=>{
 
 
+alertsRef.current = true;
+
+
 setAlertsEnabled(true);
+
+
+console.log(
+"🔔 Alertas activadas"
+);
 
 
 })

@@ -133,6 +133,8 @@ return;
 
 
 
+console.log("🔥 PEDIDOS QUE RECIBE COCINA:", data);
+
 setOrders(data || []);
 
 setLoading(false);
