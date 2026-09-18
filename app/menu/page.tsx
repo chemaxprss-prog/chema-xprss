@@ -1,15 +1,35 @@
 import MenuAccordion from "@/components/MenuAccordion";
 import CartButton from "@/components/CartButton";
+
 import { getMenu } from "@/lib/menu";
+import { getCombos } from "@/lib/combos";
 
 
 export const dynamic = "force-dynamic";
 
 
+
 export default async function MenuPage(){
 
 
+
 const products = await getMenu();
+
+
+const combos = await getCombos();
+
+
+
+
+
+console.log(
+"COMBOS RECIBIDOS MENU:",
+JSON.stringify(combos,null,2)
+);
+
+
+
+
 
 
 
@@ -29,6 +49,7 @@ let category = acc.find(
 (item)=>item.category === categoryName
 
 );
+
 
 
 
@@ -58,17 +79,15 @@ acc.push(category);
 
 
 
+
 category.items.push({
 
 
 id:product.id,
 
-
 name:product.name,
 
-
 description:product.description,
-
 
 sizes:product.sizes || []
 
@@ -90,6 +109,69 @@ return acc;
 
 
 
+
+
+
+
+// AGREGAR COMBOS COMO UNA CATEGORIA MÁS DEL MENÚ
+
+if(combos.length){
+
+
+menu.push({
+
+category:"🔥 Combos",
+
+image:combos[0]?.image || "",
+
+items:combos.map((combo:any)=>(
+
+
+{
+
+
+id:`combo-${combo.id}`,
+
+name:combo.name,
+
+description:combo.description,
+
+sizes:[
+
+{
+
+name:"Combo",
+
+price:combo.price
+
+}
+
+],
+
+
+combo_items:combo.combo_items
+
+
+}
+
+
+
+))
+
+
+});
+
+
+}
+
+
+
+
+
+
+
+
+
 return (
 
 <main className="
@@ -98,6 +180,9 @@ bg-gray-100
 p-5
 pb-32
 ">
+
+
+
 
 
 <h1 className="
@@ -116,11 +201,14 @@ mb-8
 
 
 
+
+
 <div className="
 max-w-5xl
 mx-auto
 space-y-5
 ">
+
 
 
 {
@@ -143,12 +231,21 @@ category={category}
 }
 
 
+
 </div>
 
 
 
 
+
+
+
+
+
 <CartButton />
+
+
+
 
 
 </main>

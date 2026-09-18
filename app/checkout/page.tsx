@@ -136,10 +136,34 @@ try{
 
 
 
-const orderItems = items.map((item:any)=>(
+const orderItems = items.map((item:any)=>{
 
 
-{
+if(item.item_type === "combo"){
+
+
+return {
+
+item_type:"combo",
+
+combo_id:Number(
+String(item.id).replace("combo-","")
+),
+
+quantity:item.quantity,
+
+notes:item.notes || ""
+
+};
+
+
+}
+
+
+
+return {
+
+item_type:"product",
 
 product_id:item.id,
 
@@ -149,18 +173,39 @@ quantity:item.quantity,
 
 notes:item.notes || ""
 
+};
 
-}
 
-
-));
-
+});
 
 
 
 
+console.log(
+"ITEMS ENVIADOS:",
+JSON.stringify(orderItems,null,2)
+);
+
+console.log(
+"ITEMS DEL CARRITO:",
+JSON.stringify(items,null,2)
+);
 
 
+console.log(
+"ITEMS QUE ENVIO:",
+JSON.stringify(orderItems,null,2)
+);
+console.log(
+"🔥 CARRITO ORIGINAL:",
+JSON.stringify(items,null,2)
+);
+
+
+console.log(
+"🔥 LO QUE ENVIO A SUPABASE:",
+JSON.stringify(orderItems,null,2)
+);
 
 const {data,error}=await supabase.rpc(
 

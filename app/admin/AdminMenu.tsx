@@ -335,6 +335,17 @@ roles:[
 
 
 {
+name:"🔥 Combos",
+href:"/admin/combos",
+roles:[
+"superadmin",
+"admin"
+]
+},
+
+
+
+{
 name:"📂 Categorías",
 href:"/admin/categories",
 roles:[

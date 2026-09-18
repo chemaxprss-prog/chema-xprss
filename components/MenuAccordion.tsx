@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+
 import { useCart } from "@/context/CartContext";
 
 
 interface Props {
+
   category:any;
+
 }
 
 
@@ -33,11 +36,17 @@ transition-all
 duration-300
 
 ${
+
 open
+
 ?
+
 "border-orange-400 shadow-lg"
+
 :
+
 "border-gray-100 shadow-md"
+
 }
 
 `}
@@ -47,11 +56,8 @@ open
 {/* IMAGEN CATEGORIA */}
 
 <button
-
 onClick={()=>setOpen(!open)}
-
 className="w-full text-left"
-
 >
 
 
@@ -63,20 +69,17 @@ overflow-hidden
 
 
 {
+
 category.image ?
 
 <img
-
 src={category.image}
-
 alt={category.category}
-
 className="
 w-full
 h-full
 object-cover
 "
-
 />
 
 :
@@ -148,7 +151,6 @@ text-gray-500
 
 </p>
 
-
 </div>
 
 
@@ -180,8 +182,7 @@ font-bold
 
 
 
-
-{/* PRODUCTOS */}
+{/* PRODUCTOS / COMBOS */}
 
 {
 
@@ -200,18 +201,14 @@ category.items.map((item:any)=>(
 
 
 <div
-
 key={item.id}
-
 className="
 py-4
 border-b
 border-gray-100
 last:border-none
 "
-
 >
-
 
 
 <h3 className="
@@ -246,27 +243,82 @@ mt-1
 
 
 
+{/* CONTENIDO DEL COMBO */}
+
+{
+
+item.item_type === "combo"
+&&
+item.combo_items?.length > 0
+&&
+
+<div className="
+mt-3
+bg-gray-50
+rounded-2xl
+p-3
+">
+
+
+<p className="
+text-sm
+font-black
+text-gray-700
+mb-2
+">
+
+Incluye:
+
+</p>
 
 
 {
 
-item.sizes.map((size:any)=>(
+item.combo_items.map(
+(comboItem:any,index:number)=>(
+
+
+<p
+key={index}
+className="
+text-sm
+text-gray-600
+mb-1
+"
+>
+
+✓ {comboItem.products?.name} x{comboItem.quantity}
+
+</p>
+
+
+))
+
+}
+
+
+</div>
+
+}
+
+
+
+
+
+{
+
+item.sizes?.map((size:any)=>(
 
 
 <div
-
 key={size.name}
-
 className="
 mt-3
 bg-orange-50
 rounded-2xl
 p-3
 "
-
-
 >
-
 
 
 <div className="
@@ -275,7 +327,6 @@ items-center
 justify-between
 gap-3
 ">
-
 
 
 <div>
@@ -290,7 +341,6 @@ text-gray-800
 {size.name}
 
 </p>
-
 
 
 <p className="
@@ -322,10 +372,17 @@ size:size.name,
 
 price:size.price,
 
-quantity:1
+quantity:1,
 
-})}
+item_type: item.id.toString().startsWith("combo-")
+? "combo"
+: "product",
 
+combo_id: item.id.toString().startsWith("combo-")
+? Number(item.id.replace("combo-",""))
+: null
+
+} as any)}
 
 className="
 bg-orange-500
@@ -340,7 +397,6 @@ shadow
 active:scale-95
 transition
 "
-
 >
 
 + Agregar
@@ -348,7 +404,6 @@ transition
 </button>
 
 
-
 </div>
 
 
@@ -361,7 +416,6 @@ transition
 }
 
 
-
 </div>
 
 
@@ -371,7 +425,6 @@ transition
 }
 
 
-
 </div>
 
 
@@ -382,7 +435,6 @@ transition
 
 
 </div>
-
 
 );
 
